@@ -10,5 +10,7 @@ namespace AICBank.Core.Entities
         public string Neighborhood { get; set; }
         public string City { get; set; }
         public string State { get; set; }
+        public int BankAccountId { get; set; }
+        public BankAccount BankAccount { get; set; }
     }
 }
