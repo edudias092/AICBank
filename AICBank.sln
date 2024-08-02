@@ -1,0 +1,41 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{9B9B2F70-16F6-4F2F-9576-D6DE312DDF40}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AICBank.API", "src\AICBank.API\AICBank.API.csproj", "{3A7F7B8A-86A2-4C13-B4DB-6C1D9D4DC328}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AICBank.Core", "src\AICBank.Core\AICBank.Core.csproj", "{876AF8F8-0B46-4F12-9B61-8A76981E71CF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AICBank.Data", "src\AICBank.Data\AICBank.Data.csproj", "{443D7D7D-42EC-461D-8226-8B1720C9722B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3A7F7B8A-86A2-4C13-B4DB-6C1D9D4DC328}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3A7F7B8A-86A2-4C13-B4DB-6C1D9D4DC328}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3A7F7B8A-86A2-4C13-B4DB-6C1D9D4DC328}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3A7F7B8A-86A2-4C13-B4DB-6C1D9D4DC328}.Release|Any CPU.Build.0 = Release|Any CPU
+		{876AF8F8-0B46-4F12-9B61-8A76981E71CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{876AF8F8-0B46-4F12-9B61-8A76981E71CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{876AF8F8-0B46-4F12-9B61-8A76981E71CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{876AF8F8-0B46-4F12-9B61-8A76981E71CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{443D7D7D-42EC-461D-8226-8B1720C9722B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{443D7D7D-42EC-461D-8226-8B1720C9722B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{443D7D7D-42EC-461D-8226-8B1720C9722B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{443D7D7D-42EC-461D-8226-8B1720C9722B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{3A7F7B8A-86A2-4C13-B4DB-6C1D9D4DC328} = {9B9B2F70-16F6-4F2F-9576-D6DE312DDF40}
+		{876AF8F8-0B46-4F12-9B61-8A76981E71CF} = {9B9B2F70-16F6-4F2F-9576-D6DE312DDF40}
+		{443D7D7D-42EC-461D-8226-8B1720C9722B} = {9B9B2F70-16F6-4F2F-9576-D6DE312DDF40}
+	EndGlobalSection
+EndGlobal
