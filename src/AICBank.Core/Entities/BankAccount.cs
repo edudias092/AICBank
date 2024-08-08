@@ -22,5 +22,7 @@ namespace AICBank.Core.Entities
         public TypeBankAccount Type { get; set; }
         public Professional Professional { get; set; }
         public int ProfessionalId { get; set; }
+        public AccountUser AccountUser { get; set; }
+        public int AccountUserId { get; set; }
     }
 }

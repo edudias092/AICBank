@@ -73,6 +73,11 @@ namespace AICBank.Data.Mapping
                     .WithOne(x => x.BankAccount)
                     .HasForeignKey<BankAccount>(x => x.ProfessionalId)
                     .IsRequired(false);
+
+            builder.HasOne(x => x.AccountUser)
+                    .WithOne(x => x.BankAccount)
+                    .HasForeignKey<BankAccount>(x => x.AccountUserId)
+                    .IsRequired(false);
         }
     }
 }
