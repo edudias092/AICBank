@@ -1,4 +1,7 @@
+using AICBank.Core.Interfaces;
+using AICBank.Core.Services;
 using AICBank.Data.Context;
+using AICBank.Data.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,6 +15,10 @@ builder.Services
 builder.Services.AddIdentity<IdentityUser, IdentityRole>()
                 .AddEntityFrameworkStores<AICBankDbContext>()
                 .AddDefaultTokenProviders();
+
+builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+builder.Services.AddScoped<IAccountUserRepository, AccountUserRepository>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
