@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AICBank.Core.DTOs;
 using AICBank.Core.Entities;
 using AICBank.Core.Interfaces;
+using FluentValidation;
 
 namespace AICBank.Core.Services
 {
@@ -12,13 +13,16 @@ namespace AICBank.Core.Services
     {
         private IAuthRepository _authRepository;
         private IAccountUserRepository _accountUserRepository;
+        private IValidator<AccountUserDTO> _accountUserValidator;
 
 
         public AuthService(IAuthRepository authRepository, 
-                            IAccountUserRepository accountUserRepository)
+                            IAccountUserRepository accountUserRepository,
+                            IValidator<AccountUserDTO> accountUserValidator)
         {
             _authRepository = authRepository;
             _accountUserRepository = accountUserRepository;
+            _accountUserValidator = accountUserValidator;
         }
 
         public Task<UserToken> Login(string email, string password)
@@ -28,6 +32,8 @@ namespace AICBank.Core.Services
 
         public async Task<UserToken> Register(AccountUserDTO user)
         {
+            _accountUserValidator.ValidateAndThrow(user);
+
             AuthResult result = await _authRepository.Register(user);
 
             if(result.Success)
