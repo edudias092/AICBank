@@ -11,5 +11,6 @@ public class AccountUserDTOValidator : AbstractValidator<AccountUserDTO>
         RuleFor(x => x.Password).NotEmpty().WithMessage("Senha não pode ser vazia.");
         RuleFor(x => x.ConfirmPassword).Equal(x => x.Password).WithMessage("Senhas não conferem.");
         RuleFor(x => x.Email).NotEmpty().EmailAddress().WithMessage("Email inválido.");
+        RuleFor(x => x.Phone).Matches(@"^\d{11}$").WithMessage("Telefone inválido.");
     }
 }

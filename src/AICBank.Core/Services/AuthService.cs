@@ -6,6 +6,7 @@ using AICBank.Core.DTOs;
 using AICBank.Core.Entities;
 using AICBank.Core.Interfaces;
 using FluentValidation;
+using FluentValidation.Results;
 
 namespace AICBank.Core.Services
 {
@@ -58,13 +59,18 @@ namespace AICBank.Core.Services
 
                 return token;
             }
-
-            return null;
+            else
+            {
+                throw new ValidationException("Erro ao inserir usuário.", 
+                    result.Errors.Select(e => new ValidationFailure {
+                         ErrorMessage = e
+                    }));
+            }
         }
 
         private UserToken CreateUserToken(AccountUserDTO user)
         {
-            throw new NotImplementedException();
+            return null;
         }
     }
 }
