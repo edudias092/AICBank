@@ -8,6 +8,7 @@ using AICBank.Core.Validators;
 using FakeItEasy;
 using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.Extensions.Configuration;
 
 namespace AICBank.Core.Tests.Services;
 
@@ -16,6 +17,7 @@ public class AuthServiceTests
     private IAuthRepository _authRepository;
     private IAccountUserRepository _accountUserRepository;
     private IValidator<AccountUserDTO> _accountUserValidator;
+    private IConfiguration _configuration;
 
     private AuthService _sut;
     public AuthServiceTests()
@@ -23,8 +25,9 @@ public class AuthServiceTests
         _authRepository = A.Fake<IAuthRepository>();
         _accountUserRepository = A.Fake<IAccountUserRepository>();
         _accountUserValidator = new AccountUserDTOValidator();
+        _configuration = A.Fake<IConfiguration>();
 
-        _sut = new AuthService(_authRepository, _accountUserRepository, _accountUserValidator);
+        _sut = new AuthService(_authRepository, _accountUserRepository, _accountUserValidator, _configuration);
     }
 
     [Fact]

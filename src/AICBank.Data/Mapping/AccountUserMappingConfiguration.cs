@@ -19,7 +19,7 @@ namespace AICBank.Data.Mapping
 
             builder.Property(x => x.Phone)
                     .HasColumnType("varchar(20)")
-                    .IsRequired();
+                    .IsRequired(false);
 
             builder.Property(x => x.Email)
                     .HasColumnType("varchar(255)")

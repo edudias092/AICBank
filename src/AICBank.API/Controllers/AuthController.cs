@@ -24,13 +24,32 @@ namespace AICBank.API.Controllers
             {
                 var result = await _authService.Register(userDTO);
 
-                return Created();
+                return Ok(result);
             }
             catch(ValidationException e)
             {
                 return BadRequest(new {
                     errors = e.Errors.Select(err => err.ToString())
                 });
+            }
+            catch(Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
+        }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] UserLoginDTO userLoginDTO)
+        {
+            try
+            {
+                var result = await _authService.Login(userLoginDTO.Email, userLoginDTO.Password);
+
+                return Ok(result);
+            }
+            catch(ApplicationException ex)
+            {
+                return BadRequest(ex.Message);
             }
             catch(Exception e)
             {

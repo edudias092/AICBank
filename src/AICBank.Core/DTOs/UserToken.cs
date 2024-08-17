@@ -14,7 +14,7 @@ namespace AICBank.Core.DTOs
 
     public class UserClaims 
     {
-        public string Name { get; set; }
+        public string Type { get; set; }
         public string Value { get; set; }
     }
 }

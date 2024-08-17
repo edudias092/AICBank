@@ -8,5 +8,6 @@ namespace AICBank.Core.Interfaces
         Task<AuthResult> Login(string email, string password);
         Task<AuthResult> Register(AccountUserDTO user);
         Task<IdentityUserDTO> GetUserByEmail(string email);
+        Task<List<IdentityClaimDTO>> GetUserClaims(string email);
     }
 }

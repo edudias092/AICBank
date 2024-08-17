@@ -33,6 +33,25 @@ namespace AICBank.Data.Repositories
             };
         }
 
+        public async Task<List<IdentityClaimDTO>> GetUserClaims(string email)
+        {
+            var claims = await _userManager.GetClaimsAsync(new IdentityUser {
+                Email = email,
+                UserName = email
+            });
+
+            if(claims != null){
+                var claimsDTO = claims.Select(x => new IdentityClaimDTO {
+                    Type = x.Type,
+                    Value = x.Value
+                });
+
+                return claimsDTO.ToList();
+            }
+
+            return Enumerable.Empty<IdentityClaimDTO>().ToList();
+        }
+
         public async Task<AuthResult> Login(string email, string password)
         {
             var result = await _signinManager.PasswordSignInAsync(email, password, isPersistent: true, lockoutOnFailure: false);
