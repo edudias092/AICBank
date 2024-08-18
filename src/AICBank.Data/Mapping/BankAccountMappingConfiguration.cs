@@ -34,7 +34,7 @@ namespace AICBank.Data.Mapping
                     .IsRequired(false);
 
             builder.Property(x => x.SoftDescriptor)
-                    .HasColumnType("varchar(255)")
+                    .HasColumnType("varchar(18)")
                     .IsRequired();
 
             builder.Property(x => x.GalaxId)
@@ -53,7 +53,7 @@ namespace AICBank.Data.Mapping
                     .IsRequired(false);
 
             builder.Property(x => x.ResponsibleDocument)
-                    .HasColumnType("varchar(255)")
+                    .HasColumnType("varchar(20)")
                     .IsRequired(false);
 
             builder.Property(x => x.TypeCompany)
@@ -61,7 +61,7 @@ namespace AICBank.Data.Mapping
                     .IsRequired(false);
 
             builder.Property(x => x.Cnae)
-                    .HasColumnType("varchar(255)")
+                    .HasColumnType("varchar(10)")
                     .IsRequired(false);
 
             builder.HasOne(x => x.Address)

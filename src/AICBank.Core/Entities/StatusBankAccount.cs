@@ -2,7 +2,8 @@ namespace AICBank.Core.Entities
 {
     public enum StatusBankAccount
     {
-        PendingDocuments = 1,
+        Pending = 1,
+        PendingDocuments,
         PendingAnalysis,
         Activated,
         Deactivated
