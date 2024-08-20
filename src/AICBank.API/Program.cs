@@ -1,6 +1,7 @@
 using System.Text;
 using AICBank.Core.DTOs;
 using AICBank.Core.Interfaces;
+using AICBank.Core.Mapping;
 using AICBank.Core.Services;
 using AICBank.Core.Validators;
 using AICBank.Data.Context;
@@ -23,12 +24,17 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>()
                 .AddDefaultTokenProviders()
                 .AddErrorDescriber<PortugueseIdentityErrorDescriber>();
 
+builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IAccountUserRepository, AccountUserRepository>();
 builder.Services.AddScoped<IBankAccountRepository, BankAccountRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IBankAccountService, BankAccountService>();
 
 builder.Services.AddScoped<IValidator<AccountUserDTO>, AccountUserDTOValidator>();
+
+builder.Services.AddAutoMapper(typeof(GlobalMappingProfile).Assembly);
 
 var secretKey = builder.Configuration["JWT:SecretKey"] ?? throw new ArgumentException("Key not found.");
 

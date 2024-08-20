@@ -11,7 +11,7 @@ namespace AICBank.Core.Entities
         public string SoftDescriptor { get; set; }
         public Address Address { get; set; }
         public int AddressId{ get; set; }
-        public int GalaxPayId { get; set; }
+        public int? GalaxPayId { get; set; }
         public string GalaxId { get; set; }
         public string GalaxHash { get; set; }
         public string NameDisplay { get; set; }
@@ -21,7 +21,7 @@ namespace AICBank.Core.Entities
         public StatusBankAccount Status { get; set; }
         public TypeBankAccount Type { get; set; }
         public Professional Professional { get; set; }
-        public int ProfessionalId { get; set; }
+        public int? ProfessionalId { get; set; }
         public AccountUser AccountUser { get; set; }
         public int AccountUserId { get; set; }
     }

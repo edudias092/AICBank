@@ -105,7 +105,8 @@ namespace AICBank.Core.Services
             {
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Name, user.Email),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim("AccountUserId", user.Id.ToString())
             };
             claims.AddRange(claimsDTO.Select(c => new Claim(c.Type, c.Value)));
 

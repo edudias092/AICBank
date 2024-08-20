@@ -23,5 +23,5 @@ public class BankAccountDTO
     public StatusBankAccount Status { get; set; }
     public TypeBankAccount Type { get; set; }
     public ProfessionalDTO Professional { get; set; }
-    public AccountUserDTO AccountUser { get; set; }
+    public int AccountUserId { get; set; }
 }

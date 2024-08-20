@@ -42,7 +42,8 @@ namespace AICBank.Data.Mapping
                     .IsRequired(false);
 
             builder.Property(x => x.GalaxPayId)
-                    .HasColumnType("int");
+                    .HasColumnType("int")
+                    .IsRequired(false);
 
             builder.Property(x => x.GalaxHash)
                     .HasColumnType("varchar(255)")
