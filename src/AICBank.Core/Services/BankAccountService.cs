@@ -24,11 +24,19 @@ public class BankAccountService : IBankAccountService
     {
         var userId = _httpContext.GetAccountUserId();
 
-        bankAccountDTO.AccountUserId = int.Parse(userId);
+        var existingBankAccounts = await _bankAccountRepository.Get(x => x.AccountUserId.ToString() == userId);
         
+        if(existingBankAccounts.Any())
+        {
+            throw new InvalidOperationException("Já existe uma conta para o seu usuário.");
+        }
+        
+        bankAccountDTO.AccountUserId = int.Parse(userId);
         var bankAccount = _mapper.Map<BankAccount>(bankAccountDTO);
         await _bankAccountRepository.Add(bankAccount);
 
+        bankAccountDTO = _mapper.Map<BankAccountDTO>(bankAccount);
+        
         return new ResponseDTO<BankAccountDTO>{
             Success = true,
             Data = bankAccountDTO

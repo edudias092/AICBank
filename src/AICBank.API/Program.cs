@@ -1,4 +1,5 @@
 using System.Text;
+using AICBank.API.Middlewares;
 using AICBank.Core.DTOs;
 using AICBank.Core.Interfaces;
 using AICBank.Core.Mapping;
@@ -57,6 +58,16 @@ builder.Services.AddAuthentication(opts => {
     };
 });
 
+// Configuração da autorização com a política "Bearer"
+// builder.Services.AddAuthorization(options =>
+// {
+//     options.AddPolicy(JwtBearerDefaults.AuthenticationScheme, policy =>
+//     {
+//         policy.RequireAuthenticatedUser();
+//         policy.AuthenticationSchemes.Add(JwtBearerDefaults.AuthenticationScheme);
+//     });
+// });
+
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -71,6 +82,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// app.UseAuthorization();
+app.UseMiddleware<CustomJwtAuthorizationMiddleware>();
 app.UseHttpsRedirection();
 app.MapControllers();
 

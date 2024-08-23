@@ -1,7 +1,5 @@
-using System;
 using AICBank.Core.DTOs;
 using AICBank.Core.Interfaces;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AICBank.API.Controllers;
@@ -30,6 +28,11 @@ public class BankAccountController : ControllerBase
 
             return Ok(bankAccountDTO);
         }
+        catch(InvalidOperationException ex)
+        {
+            //TODO: log the error.
+            return BadRequest(ex.Message);
+        }
         catch(Exception ex)
         {
             //TODO: log the error.
@@ -49,7 +52,12 @@ public class BankAccountController : ControllerBase
                 return BadRequest(result.Errors);
             }
 
-            return CreatedAtAction(nameof(GetById), new { id = result.Data?.Id});
+            return Created("", new { id = result.Data?.Id});
+        }
+        catch(InvalidOperationException ex)
+        {
+            //TODO: log the error.
+            return BadRequest(ex.Message);
         }
         catch(Exception ex)
         {
