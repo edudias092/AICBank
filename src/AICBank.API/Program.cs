@@ -26,12 +26,14 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>()
                 .AddErrorDescriber<PortugueseIdentityErrorDescriber>();
 
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddHttpClient();
 
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IAccountUserRepository, AccountUserRepository>();
 builder.Services.AddScoped<IBankAccountRepository, BankAccountRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IBankAccountService, BankAccountService>();
+builder.Services.AddScoped<ICelCashClientService, CelCashClientService>();
 
 builder.Services.AddScoped<IValidator<AccountUserDTO>, AccountUserDTOValidator>();
 

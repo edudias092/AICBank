@@ -40,8 +40,7 @@ public class CelCashClientService : ICelCashClientService
     public async Task<string> CreateAuthToken(string galaxId, string galaxHash, string[] permissions)
     {
         var token = GetBase64EncodedToken(galaxId, galaxHash);
-        using var request = new HttpRequestMessage(HttpMethod.Post, "/token");
-        request.Headers.Add("Content-Type", "application/json");
+        using var request = new HttpRequestMessage(HttpMethod.Post, "token");
         request.Headers.Authorization = new AuthenticationHeaderValue("Basic", token);
         request.Content = JsonContent.Create(new CelcashTokenRequestDTO
         {
@@ -52,8 +51,9 @@ public class CelCashClientService : ICelCashClientService
         var response = await _httpClient.SendAsync(request);
 
         if(response.IsSuccessStatusCode){
+            var contentString = await response.Content.ReadAsStringAsync();
             var convertedReponse = JsonSerializer.Deserialize<CelcashTokenResponseDTO>(
-                                                    await response.Content.ReadAsStringAsync());
+                                                    contentString);
             
 
             return convertedReponse.AccessToken;
@@ -67,8 +67,7 @@ public class CelCashClientService : ICelCashClientService
     {
         var token = await CreateAuthToken(_mainGalaxId, _mainGalaxHash, ["company.write"]);
 
-        using var request = new HttpRequestMessage(HttpMethod.Post, "/company/subaccount");
-        request.Headers.Add("Content-Type", "application/json");
+        using var request = new HttpRequestMessage(HttpMethod.Post, "company/subaccount");
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         request.Content = JsonContent.Create(bankAccountDTO);
 
@@ -77,6 +76,9 @@ public class CelCashClientService : ICelCashClientService
         if(response.IsSuccessStatusCode)
         {
             //do something
+        }
+        else{
+            var contentError = response.Content.ReadAsStringAsync();
         }
     }
 

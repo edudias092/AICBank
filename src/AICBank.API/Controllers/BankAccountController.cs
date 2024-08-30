@@ -9,9 +9,11 @@ namespace AICBank.API.Controllers;
 public class BankAccountController : ControllerBase
 {
     private readonly IBankAccountService _bankAccountService;
-    public BankAccountController(IBankAccountService bankAccountService)
+    private readonly ICelCashClientService _ccService;
+    public BankAccountController(IBankAccountService bankAccountService, ICelCashClientService ccService)
     {
         _bankAccountService = bankAccountService;
+        _ccService = ccService;
     }
 
     [HttpGet("{id:int}")]
@@ -65,4 +67,14 @@ public class BankAccountController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro inesperado");
         }
     }
+    
+    [HttpPost("generateToken")]
+    public async Task<IActionResult> GenerateToken(string[] permissions)
+    {
+        var bankAccountDTO = await _bankAccountService.GetBankAccountById(1);
+        await _ccService.CreateSubBankAccount(bankAccountDTO.Data);
+
+        return Ok();
+    }
+    
 }
