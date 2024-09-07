@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using AICBank.Core.DTOs;
 using AICBank.Core.DTOs.CelCash;
 using AICBank.Core.Interfaces;
@@ -16,6 +17,7 @@ public class CelCashClientService : ICelCashClientService
     private HttpClient _httpClient;
     private readonly string _mainGalaxId;
     private readonly string _mainGalaxHash;
+    private JsonSerializerOptions _jsonSerializerOptions;
     public CelCashClientService(IConfiguration config, IHttpClientFactory _httpClientFactory)
     {
         _config = config;
@@ -28,6 +30,12 @@ public class CelCashClientService : ICelCashClientService
                         ?? throw new InvalidOperationException("galaxId não encontrado.");
         _mainGalaxHash = _config.GetSection("CelCash").GetValue<string>("galaxHash")
                         ?? throw new InvalidOperationException("galaxHash não encontrado.");
+
+        _jsonSerializerOptions = new JsonSerializerOptions{
+            PropertyNameCaseInsensitive = true,
+            ReferenceHandler = ReferenceHandler.Preserve,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase 
+        };
     }
 
     private string GetBase64EncodedToken(string galaxId,string galaxHash)
@@ -53,8 +61,7 @@ public class CelCashClientService : ICelCashClientService
         if(response.IsSuccessStatusCode){
             var contentString = await response.Content.ReadAsStringAsync();
             var convertedReponse = JsonSerializer.Deserialize<CelcashTokenResponseDTO>(
-                                                    contentString);
-            
+                                                    contentString, _jsonSerializerOptions);
 
             return convertedReponse.AccessToken;
         }
@@ -63,22 +70,29 @@ public class CelCashClientService : ICelCashClientService
         }
     }
 
-    public async Task CreateSubBankAccount(BankAccountDTO bankAccountDTO)
+    public async Task<CelcashSubaccountResponseDTO> CreateSubBankAccount(BankAccountDTO bankAccountDTO)
     {
-        var token = await CreateAuthToken(_mainGalaxId, _mainGalaxHash, ["company.write"]);
+        var token = await CreateAuthToken(_mainGalaxId, _mainGalaxHash, ["company.write", "company.read"]);
 
         using var request = new HttpRequestMessage(HttpMethod.Post, "company/subaccount");
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        request.Content = JsonContent.Create(bankAccountDTO);
+        request.Content = JsonContent.Create(bankAccountDTO, null, _jsonSerializerOptions);
 
         var response = await _httpClient.SendAsync(request);
 
         if(response.IsSuccessStatusCode)
         {
-            //do something
+            var content = await response.Content.ReadAsStringAsync();
+
+            var data = JsonSerializer.Deserialize<CelcashSubaccountResponseDTO>(content, _jsonSerializerOptions);
+
+            return data;
         }
         else{
-            var contentError = response.Content.ReadAsStringAsync();
+            var contentError = await response.Content.ReadAsStringAsync();
+            var data = JsonSerializer.Deserialize<CelcashSubaccountResponseDTO>(contentError, _jsonSerializerOptions);
+
+            return data;
         }
     }
 

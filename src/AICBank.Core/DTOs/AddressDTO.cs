@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json.Serialization;
 
 namespace AICBank.Core.DTOs;
 
@@ -13,5 +14,6 @@ public class AddressDTO
     public string City { get; set; }
     public string State { get; set; }
     public int BankAccountId { get; set; }
+    [JsonIgnore]
     public BankAccountDTO BankAccount { get; set; }
 }

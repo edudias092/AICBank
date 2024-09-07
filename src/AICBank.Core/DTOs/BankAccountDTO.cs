@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json.Serialization;
 using AICBank.Core.Entities;
 
 namespace AICBank.Core.DTOs;
@@ -12,6 +13,7 @@ public class BankAccountDTO
     public string EmailContact { get; set; }
     public string Logo { get; set; }
     public string SoftDescriptor { get; set; }
+    [JsonPropertyName("Address")]
     public AddressDTO Address { get; set; }
     public int GalaxPayId { get; set; }
     public string GalaxId { get; set; }
@@ -22,6 +24,7 @@ public class BankAccountDTO
     public string Cnae { get; set; }
     public StatusBankAccount Status { get; set; }
     public TypeBankAccount Type { get; set; }
+    [JsonPropertyName("Professional")]
     public ProfessionalDTO Professional { get; set; }
     public int AccountUserId { get; set; }
 }

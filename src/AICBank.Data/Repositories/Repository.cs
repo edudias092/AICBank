@@ -11,8 +11,8 @@ namespace AICBank.Data.Repositories
 {
     public class Repository<T> : IRepository<T> where T : Entity, new()
     {
-        private readonly AICBankDbContext _db;
-        private readonly DbSet<T> _set;
+        protected readonly AICBankDbContext _db;
+        protected readonly DbSet<T> _set;
         public Repository(AICBankDbContext db)
         {
             _db = db;
@@ -28,12 +28,12 @@ namespace AICBank.Data.Repositories
 
         public async Task<List<T>> GetAll()
         {
-            return await _set.ToListAsync();
+            return await _set.AsNoTracking().ToListAsync();
         }
 
         public async Task<T> GetById(int id)
         {
-            return await _set.FindAsync(id);
+            return await _set.FirstOrDefaultAsync(x => x.Id == id);
         }
 
         public async Task Add(T entity)

@@ -4,6 +4,7 @@ using AICBank.Core.Interfaces;
 using AICBank.Core.Util.Extensions;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
+using Microsoft.IdentityModel.Tokens;
 
 namespace AICBank.Core.Services;
 
@@ -12,10 +13,12 @@ public class BankAccountService : IBankAccountService
     private readonly IBankAccountRepository _bankAccountRepository;
     private readonly IMapper _mapper;
     private readonly HttpContext _httpContext;
-    public BankAccountService(IBankAccountRepository bankAccountRepository, IMapper mapper, IHttpContextAccessor contextAccessor)
+    private readonly ICelCashClientService _celCashClientService;
+    public BankAccountService(IBankAccountRepository bankAccountRepository, IMapper mapper, IHttpContextAccessor contextAccessor, ICelCashClientService celCashClientService)
     {
         _bankAccountRepository = bankAccountRepository;
         _mapper = mapper;
+        _celCashClientService = celCashClientService;
         _httpContext = contextAccessor.HttpContext ?? throw new ApplicationException("Couldn't get the httpContext.");
     }
 
@@ -45,7 +48,7 @@ public class BankAccountService : IBankAccountService
 
     public async Task<ResponseDTO<BankAccountDTO>> GetBankAccountById(int id)
     {
-        var bankAccount = await _bankAccountRepository.GetById(id);
+        var bankAccount = await _bankAccountRepository.GetBankAccountWithInfoByIdAsync(id);
 
         if(bankAccount.AccountUserId.ToString() != _httpContext.GetAccountUserId())
         {
@@ -65,7 +68,7 @@ public class BankAccountService : IBankAccountService
     {
         var bankAccount = _mapper.Map<BankAccount>(bankAccountDTO);
 
-        var existingBankAccount = await _bankAccountRepository.GetById(bankAccountDTO.Id);
+        var existingBankAccount = await _bankAccountRepository.GetBankAccountWithInfoByIdAsync(bankAccountDTO.Id);
 
         if(existingBankAccount == null 
             || existingBankAccount.AccountUserId.ToString() != _httpContext.GetAccountUserId())
@@ -78,6 +81,49 @@ public class BankAccountService : IBankAccountService
         return new ResponseDTO<BankAccountDTO>{
             Success = true,
             Data = bankAccountDTO
+        };
+    }
+    
+    public async Task<ResponseDTO<BankAccountDTO>> IntegrateBankAccount(int id)
+    {
+        var bankAccount = await _bankAccountRepository.GetBankAccountWithInfoByIdAsync(id);
+
+        if (bankAccount == null)
+        {
+            throw new InvalidOperationException("Conta não encontrada.");
+        }
+        
+        if(bankAccount.AccountUserId.ToString() != _httpContext.GetAccountUserId())
+        {
+            throw new InvalidOperationException("Conta não pertence ao usuário.");
+        }
+
+        if (!string.IsNullOrWhiteSpace(bankAccount.GalaxHash))
+        {
+            throw new InvalidOperationException("Conta já existe no serviço");
+        }
+        var bankAccountDTO = _mapper.Map<BankAccountDTO>(bankAccount);
+        var result = await _celCashClientService.CreateSubBankAccount(bankAccountDTO);
+
+        if (result.Type && result.Company != null)
+        {
+            bankAccountDTO.GalaxHash = result.Company.GalaxHash;
+            bankAccountDTO.GalaxId = result.Company.GalaxId;
+
+            await _bankAccountRepository.Update(bankAccount);
+            
+            return new ResponseDTO<BankAccountDTO>()
+            {
+                Success = true,
+                Data = bankAccountDTO
+            };
+        }
+
+        return new ResponseDTO<BankAccountDTO>()
+        {
+            Success = false,
+            Data = null,
+            Errors = [result.Error.Message],
         };
     }
 }

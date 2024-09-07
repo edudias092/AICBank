@@ -21,14 +21,14 @@ public class BankAccountController : ControllerBase
     {
         try
         {
-            var bankAccountDTO = await _bankAccountService.GetBankAccountById(id);
+            var result = await _bankAccountService.GetBankAccountById(id);
 
-            if(bankAccountDTO == null)
+            if(result == null || !result.Success)
             {
                 return NotFound();
             }
 
-            return Ok(bankAccountDTO);
+            return Ok(result);
         }
         catch(InvalidOperationException ex)
         {
@@ -43,7 +43,7 @@ public class BankAccountController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] BankAccountDTO bankAccountDTO)
+    public async Task<IActionResult> Create(BankAccountDTO bankAccountDTO)
     {
         try
         {
@@ -68,13 +68,55 @@ public class BankAccountController : ControllerBase
         }
     }
     
-    [HttpPost("generateToken")]
-    public async Task<IActionResult> GenerateToken(string[] permissions)
+    [HttpPost("integrate/{id:int}")]
+    public async Task<IActionResult> Integrate(int id)
     {
-        var bankAccountDTO = await _bankAccountService.GetBankAccountById(1);
-        await _ccService.CreateSubBankAccount(bankAccountDTO.Data);
+        try
+        {
+            var result = await _bankAccountService.IntegrateBankAccount(id);
 
-        return Ok();
+            if(!result.Success)
+            {
+                return BadRequest(result.Errors);
+            }
+
+            return Ok(result);
+        }
+        catch(InvalidOperationException ex)
+        {
+            //TODO: log the error.
+            return BadRequest(ex.Message);
+        }
+        catch(Exception ex)
+        {
+            //TODO: log the error.
+            return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro inesperado");
+        }
     }
-    
+
+    [HttpPut("{id:int}")]
+    public async Task<IActionResult> Update(int id, BankAccountDTO bankAccountDTO)
+    {
+        try
+        {
+            var result = await _bankAccountService.UpdateBankAccount(bankAccountDTO);
+
+            if (!result.Success)
+            {
+                return BadRequest(result.Errors);
+            }
+
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            //TODO: log the error.
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            //TODO: log the error.
+            return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro inesperado");
+        }
+    }
 }

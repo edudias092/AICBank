@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json.Serialization;
 using AICBank.API.Middlewares;
 using AICBank.Core.DTOs;
 using AICBank.Core.Interfaces;
@@ -16,6 +17,8 @@ using Microsoft.IdentityModel.Tokens;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Configuration.AddEnvironmentVariables();
+
 var connectionString = builder.Configuration.GetConnectionString("AICBankDbConnString");
 builder.Services
         .AddDbContext<AICBankDbContext>(x => x.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
@@ -70,7 +73,11 @@ builder.Services.AddAuthentication(opts => {
 //     });
 // });
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(opts =>
+{
+    opts.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+    opts.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault;
+});
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
