@@ -112,7 +112,9 @@ namespace AICBank.Core.Services
             var key = Encoding.UTF8.GetBytes(secretKey);
             var signingCredentials = new SigningCredentials(new SymmetricSecurityKey(key), 
                                                             SecurityAlgorithms.HmacSha256Signature);
-            var expiresIn = DateTime.UtcNow.AddMinutes(_configuration.GetSection("JWT").GetValue<int>("TokenValidityInMinutes"));
+            
+            var tokenValidityInMinutes = int.Parse(_configuration["JWT:TokenValidityInMinutes"]);
+            var expiresIn = DateTime.UtcNow.AddMinutes(tokenValidityInMinutes);
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),

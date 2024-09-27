@@ -27,6 +27,11 @@ public class AuthServiceTests
         _accountUserValidator = new AccountUserDTOValidator();
         _configuration = A.Fake<IConfiguration>();
 
+        _configuration["JWT:SecretKey"] = "My2024@superSecretKey1234567891011";
+        _configuration["JWT:Issuer"] = "MyIssuer.com";
+        _configuration["JWT:Audience"] = "audience.com";
+        _configuration["JWT:TokenValidityInMinutes"] = "60";
+        
         _sut = new AuthService(_authRepository, _accountUserRepository, _accountUserValidator, _configuration);
     }
 
@@ -80,7 +85,7 @@ public class AuthServiceTests
         UserToken result = await _sut.Register(userDTO);
 
         //Assert
-        Assert.Null(result);
+        Assert.NotNull(result);
     }
 
     [Theory]
@@ -135,12 +140,12 @@ public class AuthServiceTests
                 Email = "test@test.com",
                 Id = Guid.NewGuid().ToString()
             });
-
+        
         //Act
         UserToken result = await _sut.Register(userDTO);
 
         //Assert
-        Assert.Null(result);
+        Assert.NotNull(result);
         A.CallTo(() => _accountUserRepository.Add(A<AccountUser>.Ignored))
             .MustHaveHappenedOnceExactly();
     }
