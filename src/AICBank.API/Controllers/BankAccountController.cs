@@ -68,31 +68,31 @@ public class BankAccountController : ControllerBase
         }
     }
     
-    [HttpPost("integrate/{id:int}")]
-    public async Task<IActionResult> Integrate(int id)
-    {
-        try
-        {
-            var result = await _bankAccountService.IntegrateBankAccount(id);
+    // [HttpPost("integrate/{id:int}")]
+    // public async Task<IActionResult> Integrate(int id)
+    // {
+    //     try
+    //     {
+    //         var result = await _bankAccountService.IntegrateBankAccount(id);
 
-            if(!result.Success)
-            {
-                return BadRequest(result.Errors);
-            }
+    //         if(!result.Success)
+    //         {
+    //             return BadRequest(result.Errors);
+    //         }
 
-            return Ok(result);
-        }
-        catch(InvalidOperationException ex)
-        {
-            //TODO: log the error.
-            return BadRequest(ex.Message);
-        }
-        catch(Exception ex)
-        {
-            //TODO: log the error.
-            return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro inesperado");
-        }
-    }
+    //         return Ok(result);
+    //     }
+    //     catch(InvalidOperationException ex)
+    //     {
+    //         //TODO: log the error.
+    //         return BadRequest(ex.Message);
+    //     }
+    //     catch(Exception ex)
+    //     {
+    //         //TODO: log the error.
+    //         return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro inesperado");
+    //     }
+    // }
 
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Update(int id, BankAccountDTO bankAccountDTO)
@@ -119,4 +119,31 @@ public class BankAccountController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro inesperado");
         }
     }
+
+    [HttpPost("{id:int}/documents")]
+    public async Task<IActionResult> SendMandatoryDocuments(int id, [FromForm] MandatoryDocumentsDTO mandatoryDocumentsDTO)
+    {
+        try
+        {
+            var result = await _bankAccountService.SendMandatoryDocuments(id, mandatoryDocumentsDTO);
+
+            if (!result.Success)
+            {
+                return BadRequest(result.Errors);
+            }
+
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            //TODO: log the error.
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            //TODO: log the error.
+            return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro inesperado");
+        }
+    }
+
 }

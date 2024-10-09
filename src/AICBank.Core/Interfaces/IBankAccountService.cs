@@ -9,4 +9,5 @@ public interface IBankAccountService
     Task<ResponseDTO<BankAccountDTO>> UpdateBankAccount(BankAccountDTO bankAccountDTO);
     Task<ResponseDTO<BankAccountDTO>> GetBankAccountById(int id);
     Task<ResponseDTO<BankAccountDTO>> IntegrateBankAccount(int id);
+    Task<ResponseDTO<BankAccountDTO>> SendMandatoryDocuments(int bankAccountId, MandatoryDocumentsDTO mandatoryDocumentsDTO);
 }

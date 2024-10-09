@@ -14,7 +14,9 @@ public class CelcashSubaccountResponseDTO
 
 public class CompanyDTO : BankAccountDTO
 {
+    [JsonPropertyName("ApiAuth")]
     public ApiAuthData ApiAuth { get; set; }
+    [JsonPropertyName("Verification")]
     public VerificationData Verification { get; set; }
 }
 
@@ -26,8 +28,8 @@ public class VerificationData
 
 public class ApiAuthData
 {
-    public string GalaxId { get; set; }
-    public string GalasHash { get; set; }
+    public int GalaxId { get; set; }
+    public string GalaxHash { get; set; }
     public string PublicToken { get; set; }
     public string confirmHashWebhook { get; set; }
 }

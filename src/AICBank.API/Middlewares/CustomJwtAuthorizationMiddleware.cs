@@ -6,14 +6,7 @@ namespace AICBank.API.Middlewares;
 public class CustomJwtAuthorizationMiddleware
 {
     private readonly RequestDelegate _next;
-    private List<AppRoute> _restrictedRoutes =
-        new List<AppRoute>
-        {
-            new ("GetById", "BankAccount"),
-            new ("Create", "BankAccount"),
-            new ("Integrate", "BankAccount"),
-            new ("Update", "BankAccount")
-        };
+    private List<AppRoute> _openRoutes = new List<AppRoute>();
     
     public record AppRoute(string Action, string Controller);
 
@@ -72,7 +65,7 @@ public class CustomJwtAuthorizationMiddleware
         var action = routeVals["action"]?.ToString();
         var controller = routeVals["controller"]?.ToString();
 
-        if (_restrictedRoutes.Any(r => action == r.Action && controller == r.Controller) && !context.User.Identity.IsAuthenticated)
+        if (!context.User.Identity.IsAuthenticated && !_openRoutes.Any(r => action == r.Action && controller == r.Controller))
         {
             return false;
         }

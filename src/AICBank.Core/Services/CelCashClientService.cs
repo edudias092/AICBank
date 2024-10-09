@@ -96,8 +96,29 @@ public class CelCashClientService : ICelCashClientService
         }
     }
 
-    public Task SendMandatoryDocuments(BankAccountDTO bankAccountDTO)
+    public async Task<CelcashSubaccountResponseDTO> SendMandatoryDocuments(CelcashSendMandatoryDocumentsDTO sendMandatoryDocumentsDTO, BankAccountDTO bankAccountDTO)
     {
-        throw new NotImplementedException();
+        var token = await CreateAuthToken(bankAccountDTO.GalaxId, bankAccountDTO.GalaxHash, ["company.write", "company.read"]);
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, "company/mandatory-documents");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        request.Content = JsonContent.Create(sendMandatoryDocumentsDTO, null, _jsonSerializerOptions);
+
+        var response = await _httpClient.SendAsync(request);
+
+        if(response.IsSuccessStatusCode)
+        {
+            var content = await response.Content.ReadAsStringAsync();
+
+            var data = JsonSerializer.Deserialize<CelcashSubaccountResponseDTO>(content, _jsonSerializerOptions);
+
+            return data;
+        }
+        else{
+            var contentError = await response.Content.ReadAsStringAsync();
+            var data = JsonSerializer.Deserialize<CelcashSubaccountResponseDTO>(contentError, _jsonSerializerOptions);
+
+            return data;
+        }
     }
 }
