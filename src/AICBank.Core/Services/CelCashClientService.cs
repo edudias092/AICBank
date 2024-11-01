@@ -4,6 +4,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using AICBank.Core.DTOs;
 using AICBank.Core.DTOs.CelCash;
@@ -35,7 +36,8 @@ public class CelCashClientService : ICelCashClientService
         _jsonSerializerOptions = new JsonSerializerOptions{
             PropertyNameCaseInsensitive = true,
             ReferenceHandler = ReferenceHandler.Preserve,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase 
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            WriteIndented = true
         };
     }
 
@@ -126,7 +128,7 @@ public class CelCashClientService : ICelCashClientService
     public async Task<BankStatementDTO> Movements(BankAccountDTO bankAccountDTO, DateTime initialDate, DateTime finalDate)
     {
         
-        var token = await CreateAuthToken(bankAccountDTO.GalaxId, bankAccountDTO.GalaxHash, ["balance.read", "company.read"]);
+        var token = await CreateAuthToken(bankAccountDTO.GalaxId, bankAccountDTO.GalaxHash, ["balance.read"]);
 
         string query = $"?initialDate={initialDate:yyyy-MM-dd}&finalDate={finalDate:yyyy-MM-dd}";
         
@@ -146,6 +148,33 @@ public class CelCashClientService : ICelCashClientService
         else{
             var contentError = await response.Content.ReadAsStringAsync();
             var data = JsonSerializer.Deserialize<BankStatementDTO>(contentError, _jsonSerializerOptions);
+
+            return data;
+        }
+    }
+
+    public async Task<CelcashChargeResponseDTO> CreateCharge(BankAccountDTO bankAccountDTO, ChargeDTO chargeDTO)
+    {
+        
+        var token = await CreateAuthToken("5473", "83Mw5u8988Qj6fZqS4Z8K7LzOo1j28S706R0BeFe", ["charges.write"]);
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, "charges");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        request.Content = JsonContent.Create(chargeDTO, null, _jsonSerializerOptions);
+
+        var response = await _httpClient.SendAsync(request);
+
+        if(response.IsSuccessStatusCode)
+        {
+            var content = await response.Content.ReadAsStringAsync();
+
+            var data = JsonSerializer.Deserialize<CelcashChargeResponseDTO>(content, _jsonSerializerOptions);
+
+            return data;
+        }
+        else{
+            var contentError = await response.Content.ReadAsStringAsync();
+            var data = JsonSerializer.Deserialize<CelcashChargeResponseDTO>(contentError, _jsonSerializerOptions);
 
             return data;
         }

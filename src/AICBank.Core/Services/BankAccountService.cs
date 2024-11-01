@@ -295,6 +295,28 @@ public class BankAccountService : IBankAccountService
         };
     }
 
+    public async Task<ResponseDTO<ChargeDTO>> CreateCharge(int bankAccountId, ChargeDTO chargeDTO)
+    {
+        var existingBankAccount = await _bankAccountRepository.GetBankAccountWithInfoByIdAsync(bankAccountId);
+
+        if (existingBankAccount == null
+            || existingBankAccount.AccountUserId.ToString() != _httpContext.GetAccountUserId())
+        {
+            throw new InvalidOperationException("Conta não encontrada para esse usuário.");
+        }
+
+        var bankAccountDTO = _mapper.Map<BankAccountDTO>(existingBankAccount);
+
+        var chargeResponseDTO = await _celCashClientService.CreateCharge(bankAccountDTO, chargeDTO);
+
+        return new ResponseDTO<ChargeDTO>{
+            Data = chargeResponseDTO.Charge,
+            Success = chargeResponseDTO.Error == null,
+            Errors = chargeResponseDTO.Error?.Details != null 
+                        ? [string.Join(", ", chargeResponseDTO.Error?.Details)] 
+                        : []
+        };
+    }
     
     private async Task<string> ConvertToBase64(IFormFile formFile, bool validate = true)
     {

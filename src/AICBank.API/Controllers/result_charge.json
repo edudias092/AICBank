@@ -1,0 +1,76 @@
+{
+    "type": true,
+    "Charge": {
+        "myId": "307cc6e9-7067-486f-a784-15e7dc4731bd",
+        "galaxPayId": 96554,
+        "value": 1000,
+        "paymentLink": "https:\/\/panel.sandbox.cel.cash\/c\/5473\/1e769bef\/b",
+        "mainPaymentMethodId": "boleto",
+        "status": "active",
+        "additionalInfo": null,
+        "createdAt": "2024-11-01 16:42:09",
+        "updatedAt": "2024-11-01 16:42:09",
+        "payedOutsideGalaxPay": false,
+        "Customer": {
+            "myId": null,
+            "galaxPayId": 34569,
+            "name": "Tiago Sebasti\u00e3o Kevin Rocha",
+            "document": "88821821692",
+            "createdAt": "2024-11-01 16:21:50",
+            "updatedAt": "2024-11-01 16:42:09",
+            "emails": [
+                "tiagosebastiaorocha@p4ed.com"
+            ],
+            "phones": [],
+            "Address": {
+                "zipCode": null,
+                "street": null,
+                "number": null,
+                "complement": null,
+                "neighborhood": null,
+                "city": null,
+                "state": null
+            },
+            "ExtraFields": []
+        },
+        "Transactions": [
+            {
+                "galaxPayId": 137980,
+                "value": 1000,
+                "payday": "2024-11-08",
+                "paydayDate": null,
+                "installment": 1,
+                "status": "pendingBoleto",
+                "statusDescription": "Em aberto",
+                "statusDate": "2024-11-01 16:42:12",
+                "createdAt": "2024-11-01 16:42:11",
+                "chargeGalaxPayId": 96554,
+                "chargeMyId": "307cc6e9-7067-486f-a784-15e7dc4731bd",
+                "ConciliationOccurrences": [],
+                "Boleto": {
+                    "pdf": "https:\/\/data.sandbox.cel.cash\/hotsys\/boleto\/202411QSCGJD36SK2R9WQ8KXUZDAE7601164211",
+                    "bankLine": "34191090080327687789529988600002198940000001000",
+                    "bankNumber": 327687,
+                    "barCode": "34191989400000010001090003276877892998860000",
+                    "bankEmissor": "itau",
+                    "bankAgency": "7892",
+                    "bankAccount": "99886"
+                },
+                "Pix": {
+                    "reference": "X1NJWT46P8497N87GF2R0000137980",
+                    "qrCode": "00020101021226880014BR.GOV.BCB.PIX2566api-h.rendimento.com.br\/q\/v2\/cobv\/ea0c7b56ac7c4a3c89b101a5f6db8bdd5204000053039865802BR5920GalaxPay Integracoes6014Belo Horizonte61083041132562070503***6304ED0F",
+                    "image": "https:\/\/data.sandbox.cel.cash\/hotsys\/pix\/X1NJWT46P8497N87GF2R0000137980",
+                    "page": "https:\/\/panel.sandbox.cel.cash\/q\/5473\/804ec01b"
+                }
+            }
+        ],
+        "ExtraFields": [],
+        "PaymentMethodBoleto": {
+            "fine": 500,
+            "interest": 75,
+            "instructions": "Teste",
+            "deadlineDays": 0,
+            "documentNumber": null
+        }
+    }
+}

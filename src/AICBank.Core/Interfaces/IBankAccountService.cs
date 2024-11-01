@@ -13,4 +13,5 @@ public interface IBankAccountService
     Task<ResponseDTO<BankAccountDTO>> SendMandatoryDocuments(int bankAccountId, MandatoryDocumentsDTO mandatoryDocumentsDTO);
     Task<ResponseDTO<BankAccountDTO>> GetBankAccountByAccountUserId(int accountUserId);
     Task<ResponseDTO<BankStatementDTO>> GetMovements(int bankAccountId, DateTime initialDate, DateTime finalDate);
+    Task<ResponseDTO<ChargeDTO>> CreateCharge(int bankAccountId, ChargeDTO chargeDTO);
 }
