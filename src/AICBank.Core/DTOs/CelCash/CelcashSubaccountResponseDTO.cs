@@ -1,4 +1,6 @@
 namespace AICBank.Core.DTOs.CelCash;
+
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 public class CelcashSubaccountResponseDTO
@@ -37,5 +39,5 @@ public class ApiAuthData
 public class ErrorDetails
 {
     public string Message { get; set; }
-    public Dictionary<string, object> Details { get; set; }
+    public Dictionary<string, string[]> Details { get; set; }
 }

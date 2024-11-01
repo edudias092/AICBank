@@ -76,7 +76,7 @@ namespace AICBank.Data.Repositories
             {
                 Action = "Register",
                 Success = result.Succeeded,
-                Errors = result.Errors.Select(x => $"{x.Code}: {x.Description}").ToArray()
+                Errors = result.Errors.Select(x => $"{x.Description}").ToArray()
             };
         }
     }

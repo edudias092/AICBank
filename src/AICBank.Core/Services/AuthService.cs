@@ -80,7 +80,8 @@ namespace AICBank.Core.Services
 
                 //Create AccountUser
                 await _accountUserRepository.Add(userDb);
-
+                user.Id = userDb.Id;
+                
                 var token = await CreateUserToken(user);
 
                 return token;

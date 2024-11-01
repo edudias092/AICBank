@@ -3,6 +3,7 @@ using AICBank.Core.DTOs;
 using AICBank.Core.DTOs.CelCash;
 using AICBank.Core.Entities;
 using AICBank.Core.Interfaces;
+using AICBank.Core.Util;
 using AICBank.Core.Util.Extensions;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
@@ -36,8 +37,16 @@ public class BankAccountService : IBankAccountService
         }
 
         bankAccountDTO.AccountUserId = int.Parse(userId);
+        bankAccountDTO.Status = StatusBankAccount.Pending;
+        
+        //Todo: remove this when consolidating
+        var cutLength = bankAccountDTO.Name?.Length > 17 ? 17 : bankAccountDTO.Name.Length; 
+        bankAccountDTO.SoftDescriptor = bankAccountDTO.Name.Substring(0, cutLength);
+
         var bankAccount = _mapper.Map<BankAccount>(bankAccountDTO);
+        
         await _bankAccountRepository.Add(bankAccount);
+
 
         bankAccountDTO = _mapper.Map<BankAccountDTO>(bankAccount);
 
@@ -69,6 +78,10 @@ public class BankAccountService : IBankAccountService
 
     public async Task<ResponseDTO<BankAccountDTO>> UpdateBankAccount(BankAccountDTO bankAccountDTO)
     {
+        //Todo: remove this when consolidating
+        var cutLength = bankAccountDTO.Name?.Length > 17 ? 17 : bankAccountDTO.Name.Length; 
+        bankAccountDTO.SoftDescriptor = bankAccountDTO.Name.Substring(0, cutLength).RemoverAcentos();
+
         var bankAccount = _mapper.Map<BankAccount>(bankAccountDTO);
 
         var existingBankAccount = await _bankAccountRepository.GetBankAccountWithInfoByIdAsync(bankAccountDTO.Id);
@@ -151,7 +164,7 @@ public class BankAccountService : IBankAccountService
         {
             Success = false,
             Data = null,
-            Errors = [result.Error.Message],
+            Errors = [ErrorMapper.MapErrors(result.Error)],
         };
     }
 
@@ -168,19 +181,19 @@ public class BankAccountService : IBankAccountService
                 MotherName = mandatoryDocumentsDTO.MotherName,
                 SocialMediaLink = mandatoryDocumentsDTO.SocialMediaLink
             },
-            Documents = new DocumentsDTO 
+            Documents = new DocumentsDTO
             {
-                Personal = new PersonalDocumentsDTO ()
+                Personal = new PersonalDocumentsDTO()
             }
         };
 
-        if(mandatoryDocumentsDTO.Type == DocumentType.CNH)
+        if (mandatoryDocumentsDTO.Type == DocumentType.CNH)
         {
             celcashSendMandatoryDocumentsDTO.Documents.Personal.CNH = new CNHDTO
             {
                 Selfie = await ConvertToBase64(mandatoryDocumentsDTO.Selfie),
-                Picture = 
-                [ 
+                Picture =
+                [
                     await ConvertToBase64(mandatoryDocumentsDTO.Front),
                     await ConvertToBase64(mandatoryDocumentsDTO.Back, false),
                 ],
@@ -188,7 +201,7 @@ public class BankAccountService : IBankAccountService
             };
         }
 
-        if(mandatoryDocumentsDTO.Type == DocumentType.RG)
+        if (mandatoryDocumentsDTO.Type == DocumentType.RG)
         {
             celcashSendMandatoryDocumentsDTO.Documents.Personal.RG = new RGDTO
             {
@@ -211,26 +224,85 @@ public class BankAccountService : IBankAccountService
 
         var result = await _celCashClientService.SendMandatoryDocuments(celcashSendMandatoryDocumentsDTO, bankAccountDTO);
 
-        if(result.Type){
+        if (result.Type)
+        {
             existingBankAccount.Status = StatusBankAccount.PendingAnalysis;
-            
             await _bankAccountRepository.Update(existingBankAccount);
+
+            bankAccountDTO = _mapper.Map<BankAccountDTO>(existingBankAccount);
         }
 
-        return new ResponseDTO<BankAccountDTO>{
+        return new ResponseDTO<BankAccountDTO>
+        {
             Success = result.Type,
-            Errors = [result.Error?.Message],
+            Errors = [ErrorMapper.MapErrors(result.Error)],
             Data = bankAccountDTO
         };
     }
 
-    private async Task<string> ConvertToBase64(IFormFile formFile, bool validate = true) 
+    public async Task<ResponseDTO<BankAccountDTO>> GetBankAccountByAccountUserId(int accountUserId)
     {
-        if(validate && (formFile == null || formFile.Length == 0))
+        var bankAccount = await _bankAccountRepository.GetByAccountUserWithInfoAsync(accountUserId);
+
+        if (bankAccount != null)
+        {
+            if (bankAccount.AccountUserId.ToString() != _httpContext.GetAccountUserId())
+            {
+                throw new InvalidOperationException("Conta não pertence ao usuário.");
+            }
+
+            var bankAccountDTO = _mapper.Map<BankAccountDTO>(bankAccount);
+            return new ResponseDTO<BankAccountDTO>
+            {
+                Success = true,
+                Errors = [],
+                Data = bankAccountDTO
+            };
+        }
+        else
+        {
+            return new ResponseDTO<BankAccountDTO>
+            {
+                Success = true,
+                Errors = [],
+                Data = null
+            };
+        }
+
+
+    }
+
+    public async Task<ResponseDTO<BankStatementDTO>> GetMovements(int bankAccountId, DateTime initialDate, DateTime finalDate)
+    {
+        var existingBankAccount = await _bankAccountRepository.GetBankAccountWithInfoByIdAsync(bankAccountId);
+
+        if (existingBankAccount == null
+            || existingBankAccount.AccountUserId.ToString() != _httpContext.GetAccountUserId())
+        {
+            throw new InvalidOperationException("Conta não encontrada para esse usuário.");
+        }
+
+        var bankAccountDTO = _mapper.Map<BankAccountDTO>(existingBankAccount);
+
+        var bankStatementDTO = await _celCashClientService.Movements(bankAccountDTO, initialDate, finalDate);
+
+        return new ResponseDTO<BankStatementDTO>{
+            Data = bankStatementDTO,
+            Success = bankStatementDTO.Error == null,
+            Errors = bankStatementDTO.Error?.Details != null 
+                        ? [string.Join(", ", bankStatementDTO.Error?.Details)] 
+                        : []
+        };
+    }
+
+    
+    private async Task<string> ConvertToBase64(IFormFile formFile, bool validate = true)
+    {
+        if (validate && (formFile == null || formFile.Length == 0))
             throw new InvalidOperationException("Arquivo inválido.");
 
         using var memoryStream = new MemoryStream();
-        
+
         await formFile.CopyToAsync(memoryStream);
 
         var contentBytes = memoryStream.ToArray();

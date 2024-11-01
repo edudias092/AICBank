@@ -1,4 +1,5 @@
 using System;
+using System.Data.Common;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
@@ -117,6 +118,34 @@ public class CelCashClientService : ICelCashClientService
         else{
             var contentError = await response.Content.ReadAsStringAsync();
             var data = JsonSerializer.Deserialize<CelcashSubaccountResponseDTO>(contentError, _jsonSerializerOptions);
+
+            return data;
+        }
+    }
+
+    public async Task<BankStatementDTO> Movements(BankAccountDTO bankAccountDTO, DateTime initialDate, DateTime finalDate)
+    {
+        
+        var token = await CreateAuthToken(bankAccountDTO.GalaxId, bankAccountDTO.GalaxHash, ["balance.read", "company.read"]);
+
+        string query = $"?initialDate={initialDate:yyyy-MM-dd}&finalDate={finalDate:yyyy-MM-dd}";
+        
+        using var request = new HttpRequestMessage(HttpMethod.Get, string.Format("company/balance/movements{0}", query));
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        
+        var response = await _httpClient.SendAsync(request);
+
+        if(response.IsSuccessStatusCode)
+        {
+            var content = await response.Content.ReadAsStringAsync();
+
+            var data = JsonSerializer.Deserialize<BankStatementDTO>(content, _jsonSerializerOptions);
+
+            return data;
+        }
+        else{
+            var contentError = await response.Content.ReadAsStringAsync();
+            var data = JsonSerializer.Deserialize<BankStatementDTO>(contentError, _jsonSerializerOptions);
 
             return data;
         }

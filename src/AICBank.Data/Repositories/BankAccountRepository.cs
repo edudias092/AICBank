@@ -23,4 +23,16 @@ public class BankAccountRepository : Repository<BankAccount>, IBankAccountReposi
         
         return bankAccount;
     }
+
+    public async Task<BankAccount> GetByAccountUserWithInfoAsync(int accountUserId)
+    {
+        var bankAccount = await _set.Where(b => b.AccountUserId == accountUserId)
+                                .Include(b => b.Address)
+                                .Include(b => b.Professional)
+                                .Include(b => b.AccountUser)
+                                .AsNoTracking()
+                                .FirstOrDefaultAsync();
+
+        return bankAccount;
+    }
 }

@@ -11,10 +11,12 @@ namespace AICBank.API.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly ILogger<AuthController> _logger;
 
-        public AuthController(IAuthService authService)
+        public AuthController(IAuthService authService, ILogger<AuthController> logger)
         {
             _authService = authService;
+            _logger = logger;
         }
 
         [HttpPost("register")]
@@ -28,12 +30,14 @@ namespace AICBank.API.Controllers
             }
             catch(ValidationException e)
             {
-                return BadRequest(new {
-                    errors = e.Errors.Select(err => err.ToString())
-                });
+                return BadRequest(
+                    e.Errors.Select(err => err.ErrorMessage.ToString()).ToArray()
+                );
             }
             catch(Exception e)
             {
+                _logger.LogCritical(e, "{0} : Erro Inesperado", nameof(Register));
+
                 return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
             }
         }
@@ -49,10 +53,14 @@ namespace AICBank.API.Controllers
             }
             catch(ApplicationException ex)
             {
+                _logger.LogError(ex, ex.Message);
+
                 return BadRequest(ex.Message);
             }
             catch(Exception e)
             {
+                _logger.LogCritical(e, "{0} : Erro Inesperado", nameof(Register));
+
                 return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
             }
         }

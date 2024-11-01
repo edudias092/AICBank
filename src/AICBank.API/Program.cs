@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json.Serialization;
+using AICBank.API.Extensions;
 using AICBank.API.Middlewares;
 using AICBank.Core.DTOs;
 using AICBank.Core.Interfaces;
@@ -13,7 +14,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
+using Serilog;
+using Serilog.Sinks.Grafana.Loki;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +33,14 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>()
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient();
+
+builder.Services.AddSerilog(config => config
+                .WriteTo.GrafanaLoki("http://localhost:3100")
+                .ReadFrom.Configuration(builder.Configuration));
+
+Log.Information("Starting web server...");
+
+builder.Services.AddLogging();
 
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IAccountUserRepository, AccountUserRepository>();
@@ -84,6 +94,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+// app.UseSerilogRequestLogging();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

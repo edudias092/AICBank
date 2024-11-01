@@ -9,11 +9,11 @@ namespace AICBank.API.Controllers;
 public class BankAccountController : ControllerBase
 {
     private readonly IBankAccountService _bankAccountService;
-    private readonly ICelCashClientService _ccService;
-    public BankAccountController(IBankAccountService bankAccountService, ICelCashClientService ccService)
+    private readonly ILogger<BankAccountController> _logger;
+    public BankAccountController(IBankAccountService bankAccountService, ILogger<BankAccountController> logger)
     {
         _bankAccountService = bankAccountService;
-        _ccService = ccService;
+        _logger = logger;
     }
 
     [HttpGet("{id:int}")]
@@ -32,12 +32,14 @@ public class BankAccountController : ControllerBase
         }
         catch(InvalidOperationException ex)
         {
-            //TODO: log the error.
+            _logger.LogError(ex.Message);
+
             return BadRequest(ex.Message);
         }
         catch(Exception ex)
         {
-            //TODO: log the error.
+            _logger.LogCritical(ex, "Erro inesperado");
+
             return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro inesperado");
         }
     }
@@ -67,32 +69,6 @@ public class BankAccountController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro inesperado");
         }
     }
-    
-    // [HttpPost("integrate/{id:int}")]
-    // public async Task<IActionResult> Integrate(int id)
-    // {
-    //     try
-    //     {
-    //         var result = await _bankAccountService.IntegrateBankAccount(id);
-
-    //         if(!result.Success)
-    //         {
-    //             return BadRequest(result.Errors);
-    //         }
-
-    //         return Ok(result);
-    //     }
-    //     catch(InvalidOperationException ex)
-    //     {
-    //         //TODO: log the error.
-    //         return BadRequest(ex.Message);
-    //     }
-    //     catch(Exception ex)
-    //     {
-    //         //TODO: log the error.
-    //         return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro inesperado");
-    //     }
-    // }
 
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Update(int id, BankAccountDTO bankAccountDTO)
@@ -121,7 +97,7 @@ public class BankAccountController : ControllerBase
     }
 
     [HttpPost("{id:int}/documents")]
-    public async Task<IActionResult> SendMandatoryDocuments(int id, [FromForm] MandatoryDocumentsDTO mandatoryDocumentsDTO)
+    public async Task<IActionResult> SendMandatoryDocuments([FromRoute] int id, [FromForm] MandatoryDocumentsDTO mandatoryDocumentsDTO)
     {
         try
         {
@@ -146,4 +122,57 @@ public class BankAccountController : ControllerBase
         }
     }
 
+    [HttpGet("accountuser/{id:int}")]
+    public async Task<IActionResult> GetByAccountUser(int id)
+    {
+        try
+        {
+            var result = await _bankAccountService.GetBankAccountByAccountUserId(id);
+
+            if(result == null || !result.Success)
+            {
+                return NotFound();
+            }
+
+            return Ok(result);
+        }
+        catch(InvalidOperationException ex)
+        {
+            //TODO: log the error.
+            return BadRequest(ex.Message);
+        }
+        catch(Exception ex)
+        {
+            //TODO: log the error.
+            return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro inesperado");
+        }
+    }
+
+    [HttpGet("{id:int}/movements")]
+    public async Task<IActionResult> GetMovements(int id, [FromQuery]DateTime initialDate, [FromQuery]DateTime finalDate)
+    {
+        try
+        {
+            var result = await _bankAccountService.GetMovements(id, initialDate, finalDate);
+
+            if(result == null || !result.Success)
+            {
+                return NotFound();
+            }
+
+            return Ok(result);
+        }
+        catch(InvalidOperationException ex)
+        {
+            _logger.LogError(ex.Message);
+
+            return BadRequest(ex.Message);
+        }
+        catch(Exception ex)
+        {
+            _logger.LogCritical(ex, "Erro inesperado");
+            
+            return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro inesperado");
+        }
+    }
 }
