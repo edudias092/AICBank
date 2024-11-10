@@ -1,4 +1,5 @@
 using AICBank.Core.DTOs;
+using AICBank.Core.DTOs.CelCash;
 using AICBank.Core.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -187,7 +188,7 @@ public class BankAccountController : ControllerBase
     [HttpPost("{id:int}/charge")]
     public async Task<IActionResult> CreateCharge(int id, ChargeDTO chargeDTO)
     {
-        ResponseDTO<ChargeDTO> result;
+        ResponseDTO<CelcashChargeDTO> result;
         try
         {
             result = await _bankAccountService.CreateCharge(id, chargeDTO);
@@ -216,6 +217,34 @@ public class BankAccountController : ControllerBase
             {
                 Errors= ["Ocorreu um erro inesperado."]
             });
+        }
+    }
+
+    [HttpGet("{id:int}/charges")]
+    public async Task<IActionResult> GetCharges(int id, [FromQuery]DateTime? initialDate, [FromQuery]DateTime? finalDate)
+    {
+        try
+        {
+            var result = await _bankAccountService.GetCharges(id, initialDate, finalDate);
+
+            if(result == null || !result.Success)
+            {
+                return NotFound();
+            }
+
+            return Ok(result);
+        }
+        catch(InvalidOperationException ex)
+        {
+            _logger.LogError(ex.Message);
+
+            return BadRequest(ex.Message);
+        }
+        catch(Exception ex)
+        {
+            _logger.LogCritical(ex, "Erro inesperado");
+            
+            return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro inesperado");
         }
     }
 }

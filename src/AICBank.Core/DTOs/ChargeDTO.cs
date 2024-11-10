@@ -10,7 +10,7 @@ public class ChargeDTO
         MyId = Guid.NewGuid();
     }
 
-    public Guid MyId { get; set; }
+    public Guid? MyId { get; set; }
 
     public int GalaxPayId { get; set; }
 

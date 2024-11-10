@@ -295,7 +295,7 @@ public class BankAccountService : IBankAccountService
         };
     }
 
-    public async Task<ResponseDTO<ChargeDTO>> CreateCharge(int bankAccountId, ChargeDTO chargeDTO)
+    public async Task<ResponseDTO<CelcashChargeDTO>> CreateCharge(int bankAccountId, ChargeDTO chargeDTO)
     {
         var existingBankAccount = await _bankAccountRepository.GetBankAccountWithInfoByIdAsync(bankAccountId);
 
@@ -309,12 +309,34 @@ public class BankAccountService : IBankAccountService
 
         var chargeResponseDTO = await _celCashClientService.CreateCharge(bankAccountDTO, chargeDTO);
 
-        return new ResponseDTO<ChargeDTO>{
+        return new ResponseDTO<CelcashChargeDTO>{
             Data = chargeResponseDTO.Charge,
             Success = chargeResponseDTO.Error == null,
             Errors = chargeResponseDTO.Error?.Details != null 
                         ? [string.Join(", ", chargeResponseDTO.Error?.Details)] 
                         : []
+        };
+    }
+
+    public async Task<ResponseDTO<CelcashChargeDTO[]>> GetCharges(int bankAccountId, DateTime? initialDate, DateTime? finalDate)
+    {
+        var existingBankAccount = await _bankAccountRepository.GetBankAccountWithInfoByIdAsync(bankAccountId);
+
+        if (existingBankAccount == null
+            || existingBankAccount.AccountUserId.ToString() != _httpContext.GetAccountUserId())
+        {
+            throw new InvalidOperationException("Conta não encontrada para esse usuário.");
+        }
+
+        var bankAccountDTO = _mapper.Map<BankAccountDTO>(existingBankAccount);
+
+        var chargeDTOs = await _celCashClientService.GetCharges(bankAccountDTO, initialDate, finalDate);
+
+        var successful = chargeDTOs != null && chargeDTOs.Length > 0;
+        return new ResponseDTO<CelcashChargeDTO[]>{
+            Data = chargeDTOs,
+            Success = successful,
+            Errors = successful ? null : ["Erro ao obter cobranças. Por favor entre em contato com o suporte"]
         };
     }
     

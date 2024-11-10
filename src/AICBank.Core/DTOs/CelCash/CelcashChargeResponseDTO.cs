@@ -9,7 +9,7 @@ public class CelcashChargeResponseDTO
     public bool Type { get; set; }
 
     [JsonPropertyName("Charge")]
-    public ChargeDTO Charge { get; set; }
+    public CelcashChargeDTO Charge { get; set; }
 
     public ErrorDetails Error { get; set; }
 }

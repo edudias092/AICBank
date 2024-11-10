@@ -10,4 +10,5 @@ public interface ICelCashClientService
     Task<CelcashSubaccountResponseDTO> SendMandatoryDocuments(CelcashSendMandatoryDocumentsDTO sendMandatoryDocumentsDTO, BankAccountDTO bankAccountDTO);
     Task<BankStatementDTO> Movements(BankAccountDTO bankAccountDTO, DateTime initialDate, DateTime finalDate);
     Task<CelcashChargeResponseDTO> CreateCharge(BankAccountDTO bankAccountDTO, ChargeDTO chargeDTO);
+    Task<CelcashChargeDTO[]> GetCharges(BankAccountDTO bankAccountDTO, DateTime? initialDate, DateTime? finalDate);
 }
