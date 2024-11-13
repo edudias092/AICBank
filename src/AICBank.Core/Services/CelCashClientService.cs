@@ -235,4 +235,52 @@ public class CelCashClientService : ICelCashClientService
             return null;
         }
     }
+
+    public async Task<CelcashChargeDTO> GetChargeById(BankAccountDTO bankAccountDTO, string chargeId)
+    {
+        //TODO: remover o main e deixar o da conta bancária.
+        var token = await CreateAuthToken(_mainGalaxId, _mainGalaxHash, ["charges.read"]);
+        var uriBuilder = new UriBuilder(_httpClient.BaseAddress) {Path = _httpClient.BaseAddress.AbsolutePath+"charges"};
+        var parameters = new Dictionary<string, string>
+        {
+            { "startAt", "0" },
+            { "limit", "1" },
+            { "order", "createdAt.desc" },
+            { "myIds", chargeId }
+        };
+
+        var query = HttpUtility.ParseQueryString(uriBuilder.Query);
+
+        foreach(var p in parameters){
+            query[p.Key] = p.Value;
+        }
+
+        uriBuilder.Query = query.ToString();
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, uriBuilder.Uri);
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        
+        var response = await _httpClient.SendAsync(request);
+
+        if(response.IsSuccessStatusCode)
+        {
+            var content = await response.Content.ReadAsStringAsync();
+            _logger.LogDebug(content);
+
+            var data = JsonSerializer.Deserialize<JsonObject>(content, _jsonSerializerOptions);
+
+            var charges = JsonSerializer.Deserialize<CelcashChargeDTO[]>(data["Charges"], _jsonSerializerOptions);
+
+            return charges.FirstOrDefault();
+        }
+        else{
+            var contentError = await response.Content.ReadAsStringAsync();
+            _logger.LogDebug(contentError);
+
+            var data = JsonSerializer.Deserialize<JsonObject>(contentError, _jsonSerializerOptions);
+
+            return null;
+        }
+    }
+
 }

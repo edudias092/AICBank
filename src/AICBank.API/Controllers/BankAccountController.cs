@@ -247,4 +247,32 @@ public class BankAccountController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro inesperado");
         }
     }
+
+    [HttpGet("{id:int}/charges/{chargeId}")]
+    public async Task<IActionResult> GetCharges(int id, string chargeId)
+    {
+        try
+        {
+            var result = await _bankAccountService.GetChargeById(id, chargeId);
+
+            if(result == null || !result.Success)
+            {
+                return NotFound();
+            }
+
+            return Ok(result);
+        }
+        catch(InvalidOperationException ex)
+        {
+            _logger.LogError(ex.Message);
+
+            return BadRequest(ex.Message);
+        }
+        catch(Exception ex)
+        {
+            _logger.LogCritical(ex, "Erro inesperado");
+            
+            return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro inesperado");
+        }
+    }
 }

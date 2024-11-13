@@ -11,4 +11,5 @@ public interface ICelCashClientService
     Task<BankStatementDTO> Movements(BankAccountDTO bankAccountDTO, DateTime initialDate, DateTime finalDate);
     Task<CelcashChargeResponseDTO> CreateCharge(BankAccountDTO bankAccountDTO, ChargeDTO chargeDTO);
     Task<CelcashChargeDTO[]> GetCharges(BankAccountDTO bankAccountDTO, DateTime? initialDate, DateTime? finalDate);
+    Task<CelcashChargeDTO> GetChargeById(BankAccountDTO bankAccountDTO, string chargeId);
 }

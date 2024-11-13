@@ -340,6 +340,28 @@ public class BankAccountService : IBankAccountService
         };
     }
     
+    public async Task<ResponseDTO<CelcashChargeDTO>> GetChargeById(int bankAccountId, string chargeId)
+    {
+        var existingBankAccount = await _bankAccountRepository.GetBankAccountWithInfoByIdAsync(bankAccountId);
+
+        if (existingBankAccount == null
+            || existingBankAccount.AccountUserId.ToString() != _httpContext.GetAccountUserId())
+        {
+            throw new InvalidOperationException("Conta não encontrada para esse usuário.");
+        }
+
+        var bankAccountDTO = _mapper.Map<BankAccountDTO>(existingBankAccount);
+
+        var chargeDTO = await _celCashClientService.GetChargeById(bankAccountDTO, chargeId);
+
+        var successful = chargeDTO != null;
+        return new ResponseDTO<CelcashChargeDTO>{
+            Data = chargeDTO,
+            Success = successful,
+            Errors = successful ? null : ["Erro ao obter cobranças. Por favor entre em contato com o suporte"]
+        };
+    }
+    
     private async Task<string> ConvertToBase64(IFormFile formFile, bool validate = true)
     {
         if (validate && (formFile == null || formFile.Length == 0))
