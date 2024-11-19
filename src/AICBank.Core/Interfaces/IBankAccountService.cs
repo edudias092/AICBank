@@ -16,4 +16,5 @@ public interface IBankAccountService
     Task<ResponseDTO<CelcashChargeDTO>> CreateCharge(int bankAccountId, ChargeDTO chargeDTO);
     Task<ResponseDTO<CelcashChargeDTO[]>> GetCharges(int bankAccountId, DateTime? initialDate, DateTime? finalDate);
     Task<ResponseDTO<CelcashChargeDTO>> GetChargeById(int bankAccountId, string chargeId);
+    Task<ResponseDTO<bool>> CancelCharge(int bankAccountId, string chargeId);
 }

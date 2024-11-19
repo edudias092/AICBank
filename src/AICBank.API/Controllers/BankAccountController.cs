@@ -46,11 +46,11 @@ public class BankAccountController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(BankAccountDTO bankAccountDTO)
+    public async Task<IActionResult> Create(BankAccountDTO bankAccountDto)
     {
         try
         {
-            var result = await _bankAccountService.CreateBankAccount(bankAccountDTO);
+            var result = await _bankAccountService.CreateBankAccount(bankAccountDto);
 
             if(!result.Success)
             {
@@ -74,11 +74,11 @@ public class BankAccountController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
-    public async Task<IActionResult> Update(int id, BankAccountDTO bankAccountDTO)
+    public async Task<IActionResult> Update(int id, BankAccountDTO bankAccountDto)
     {
         try
         {
-            var result = await _bankAccountService.UpdateBankAccount(bankAccountDTO);
+            var result = await _bankAccountService.UpdateBankAccount(bankAccountDto);
 
             if (!result.Success)
             {
@@ -102,11 +102,11 @@ public class BankAccountController : ControllerBase
     }
 
     [HttpPost("{id:int}/documents")]
-    public async Task<IActionResult> SendMandatoryDocuments([FromRoute] int id, [FromForm] MandatoryDocumentsDTO mandatoryDocumentsDTO)
+    public async Task<IActionResult> SendMandatoryDocuments([FromRoute] int id, [FromForm] MandatoryDocumentsDTO mandatoryDocumentsDto)
     {
         try
         {
-            var result = await _bankAccountService.SendMandatoryDocuments(id, mandatoryDocumentsDTO);
+            var result = await _bankAccountService.SendMandatoryDocuments(id, mandatoryDocumentsDto);
 
             if (!result.Success)
             {
@@ -186,12 +186,12 @@ public class BankAccountController : ControllerBase
     }
 
     [HttpPost("{id:int}/charge")]
-    public async Task<IActionResult> CreateCharge(int id, ChargeDTO chargeDTO)
+    public async Task<IActionResult> CreateCharge(int id, ChargeDTO chargeDto)
     {
         ResponseDTO<CelcashChargeDTO> result;
         try
         {
-            result = await _bankAccountService.CreateCharge(id, chargeDTO);
+            result = await _bankAccountService.CreateCharge(id, chargeDto);
 
             if(!result.Success)
             {
@@ -249,13 +249,41 @@ public class BankAccountController : ControllerBase
     }
 
     [HttpGet("{id:int}/charges/{chargeId}")]
-    public async Task<IActionResult> GetCharges(int id, string chargeId)
+    public async Task<IActionResult> GetCharge(int id, string chargeId)
     {
         try
         {
             var result = await _bankAccountService.GetChargeById(id, chargeId);
 
             if(result == null || !result.Success)
+            {
+                return NotFound();
+            }
+
+            return Ok(result);
+        }
+        catch(InvalidOperationException ex)
+        {
+            _logger.LogError(ex.Message);
+
+            return BadRequest(ex.Message);
+        }
+        catch(Exception ex)
+        {
+            _logger.LogCritical(ex, "Erro inesperado");
+            
+            return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro inesperado");
+        }
+    }
+    
+    [HttpDelete("{id:int}/charges/{chargeId}")]
+    public async Task<IActionResult> CancelCharge(int id, string chargeId)
+    {
+        try
+        {
+            var result = await _bankAccountService.CancelCharge(id, chargeId);
+
+            if(result is not { Success: true })
             {
                 return NotFound();
             }

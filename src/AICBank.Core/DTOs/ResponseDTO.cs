@@ -2,7 +2,7 @@ using System;
 
 namespace AICBank.Core.DTOs;
 
-public class ResponseDTO<T> where T : class
+public class ResponseDTO<T>
 {
     public string Action { get; set; }
     public bool Success { get; set; }
