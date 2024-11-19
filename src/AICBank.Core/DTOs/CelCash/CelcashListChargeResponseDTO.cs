@@ -6,7 +6,7 @@ namespace AICBank.Core.DTOs.CelCash;
 public class CelcashListChargeResponseDTO
 {
     [JsonPropertyName("type")]
-    public bool TotalQtdFoundInPage { get; set; }
+    public int TotalQtdFoundInPage { get; set; }
 
     [JsonPropertyName("Charges")]
     public CelcashChargeDTO[] Charges { get; set; }

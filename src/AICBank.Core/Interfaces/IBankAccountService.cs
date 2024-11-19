@@ -1,6 +1,7 @@
 using System;
 using AICBank.Core.DTOs;
 using AICBank.Core.DTOs.CelCash;
+using AICBank.Core.Services;
 
 namespace AICBank.Core.Interfaces;
 
@@ -17,4 +18,7 @@ public interface IBankAccountService
     Task<ResponseDTO<CelcashChargeDTO[]>> GetCharges(int bankAccountId, DateTime? initialDate, DateTime? finalDate);
     Task<ResponseDTO<CelcashChargeDTO>> GetChargeById(int bankAccountId, string chargeId);
     Task<ResponseDTO<bool>> CancelCharge(int bankAccountId, string chargeId);
+    Task<ResponseDTO<CelcashBalanceResponseDto>> GetBalance(int bankAccountId);
+    Task<ResponseDTO<CelcashPaymentResponseDto>> MakePayment(int bankAccountId, CelcashPaymentRequestDto paymentRequest);
+    Task<ResponseDTO<IEnumerable<IGrouping<DateTime, CelcashChargeDTO>>>> GetChargesGroup(int bankAccountId);
 }

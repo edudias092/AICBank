@@ -9,6 +9,26 @@ namespace AICBank.Core.DTOs.CelCash
 
         [JsonPropertyName("Documents")]
         public DocumentsDTO Documents { get; set; }
+
+        public static CelcashSendMandatoryDocumentsDTO FromMandatoryDocumentsDto(
+            MandatoryDocumentsDTO mandatoryDocumentsDTO)
+        {
+            return new CelcashSendMandatoryDocumentsDTO
+            {
+                Fields = new FieldsDTO
+                {
+                    About = mandatoryDocumentsDTO.About,
+                    BirthDate = mandatoryDocumentsDTO.BirthDate,
+                    MonthlyIncome = mandatoryDocumentsDTO.MonthlyIncome,
+                    MotherName = mandatoryDocumentsDTO.MotherName,
+                    SocialMediaLink = mandatoryDocumentsDTO.SocialMediaLink
+                },
+                Documents = new DocumentsDTO
+                {
+                    Personal = new PersonalDocumentsDTO()
+                }
+            };
+        }
     }
 
     public class FieldsDTO 

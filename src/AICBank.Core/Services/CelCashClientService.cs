@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using System.Web;
 using AICBank.Core.DTOs;
 using AICBank.Core.DTOs.CelCash;
@@ -115,15 +116,15 @@ public class CelCashClientService : ICelCashClientService
         }
     }
 
-    public async Task<CelcashSubaccountResponseDTO> SendMandatoryDocuments(CelcashSendMandatoryDocumentsDTO sendMandatoryDocumentsDTO, BankAccountDTO bankAccountDTO)
+    public async Task<CelcashSubaccountResponseDTO> SendMandatoryDocuments(CelcashSendMandatoryDocumentsDTO sendMandatoryDocumentsDto, BankAccountDTO bankAccountDto)
     {
-        var token = await CreateAuthToken(bankAccountDTO.GalaxId, 
-                                bankAccountDTO.GalaxHash, 
+        var token = await CreateAuthToken(bankAccountDto.GalaxId, 
+                                bankAccountDto.GalaxHash, 
                                 ["company.write", "company.read"]);
 
         using var request = HttpRequestBuilder.Create("company/mandatory-documents", HttpMethod.Post)
             .AddAuthorization("Bearer", token)
-            .AddContent(JsonContent.Create(sendMandatoryDocumentsDTO, null, _jsonSerializerOptions))
+            .AddContent(JsonContent.Create(sendMandatoryDocumentsDto, null, _jsonSerializerOptions))
             .Build();
 
         var response = await _httpClient.SendAsync(request);
@@ -144,10 +145,10 @@ public class CelCashClientService : ICelCashClientService
         }
     }
 
-    public async Task<BankStatementDTO> Movements(BankAccountDTO bankAccountDTO, DateTime initialDate, DateTime finalDate)
+    public async Task<BankStatementDTO> Movements(BankAccountDTO bankAccountDto, DateTime initialDate, DateTime finalDate)
     {
         
-        var token = await CreateAuthToken(bankAccountDTO.GalaxId, bankAccountDTO.GalaxHash, ["balance.read"]);
+        var token = await CreateAuthToken(bankAccountDto.GalaxId, bankAccountDto.GalaxHash, ["balance.read"]);
 
         string query = $"?initialDate={initialDate:yyyy-MM-dd}&finalDate={finalDate:yyyy-MM-dd}";
 
@@ -171,11 +172,11 @@ public class CelCashClientService : ICelCashClientService
         return await _httpRequestSender.SendAsync<CelcashChargeResponseDTO>(request);
     }
 
-    public async Task<CelcashListChargeResponseDTO> GetCharges(BankAccountDTO bankAccountDTO, DateTime? initialDate,
+    public async Task<CelcashListChargeResponseDTO> GetCharges(BankAccountDTO bankAccountDto, DateTime? initialDate,
         DateTime? finalDate)
     {
         //TODO: remover o main e deixar o da conta bancária.
-        var token = await CreateAuthToken(bankAccountDTO.GalaxId, bankAccountDTO.GalaxHash, ["charges.read"]);
+        var token = await CreateAuthToken(bankAccountDto.GalaxId, bankAccountDto.GalaxHash, ["charges.read"]);
         var uriBuilder = new UriBuilder(_httpClient.BaseAddress) {Path = _httpClient.BaseAddress.AbsolutePath+"charges"};
         var parameters = new Dictionary<string, string>();
 
@@ -203,10 +204,10 @@ public class CelCashClientService : ICelCashClientService
         return await _httpRequestSender.SendAsync<CelcashListChargeResponseDTO>(request);
     }
 
-    public async Task<CelcashListChargeResponseDTO> GetChargeById(BankAccountDTO bankAccountDTO, string chargeId)
+    public async Task<CelcashListChargeResponseDTO> GetChargeById(BankAccountDTO bankAccountDto, string chargeId)
     {
         //TODO: remover o main e deixar o da conta bancária.
-        var token = await CreateAuthToken(bankAccountDTO.GalaxId, bankAccountDTO.GalaxHash, ["charges.read"]);
+        var token = await CreateAuthToken(bankAccountDto.GalaxId, bankAccountDto.GalaxHash, ["charges.read"]);
         var uriBuilder = new UriBuilder(_httpClient.BaseAddress) {Path = _httpClient.BaseAddress.AbsolutePath+"charges"};
         var parameters = new Dictionary<string, string>
         {
@@ -231,9 +232,9 @@ public class CelCashClientService : ICelCashClientService
         return await _httpRequestSender.SendAsync<CelcashListChargeResponseDTO>(request);
     }
 
-    public async Task<bool> CancelCharge(BankAccountDTO bankAccountDTO, string chargeId)
+    public async Task<bool> CancelCharge(BankAccountDTO bankAccountDto, string chargeId)
     {
-        var token = await CreateAuthToken(bankAccountDTO.GalaxId, bankAccountDTO.GalaxHash, ["charges.write"]);
+        var token = await CreateAuthToken(bankAccountDto.GalaxId, bankAccountDto.GalaxHash, ["charges.write"]);
         using var request = HttpRequestBuilder.Create($"charges/{chargeId}/myId", HttpMethod.Delete)
             .AddAuthorization("Bearer", token)
             .Build();
@@ -244,5 +245,29 @@ public class CelCashClientService : ICelCashClientService
 
             return jsonContent["type"]!.GetValue<bool>();
         });
+    }
+
+    public async Task<CelcashBalanceResponseDto> GetBalance(BankAccountDTO bankAccountDto)
+    {
+        var token = await CreateAuthToken(bankAccountDto.GalaxId, bankAccountDto.GalaxHash, ["balance.read"]);
+
+        using var request = HttpRequestBuilder.Create("company/balance", HttpMethod.Get)
+            .AddAuthorization("Bearer", token)
+            .Build();
+
+        return await _httpRequestSender.SendAsync<CelcashBalanceResponseDto>(request);
+    }
+
+    public async Task<CelcashPaymentResponseDto> MakePayment(BankAccountDTO bankAccountDto, CelcashPaymentRequestDto paymentRequest)
+    {
+        var token = await CreateAuthToken(bankAccountDto.GalaxId, bankAccountDto.GalaxHash, ["balance.write"]);
+        var requestBody = JsonContent.Create(paymentRequest, null, _jsonSerializerOptions);
+
+        using var request = HttpRequestBuilder.Create("pix/payment", HttpMethod.Post)
+            .AddAuthorization("Bearer", token)
+            .AddContent(requestBody)
+            .Build();
+
+        return await _httpRequestSender.SendAsync<CelcashPaymentResponseDto>(request);
     }
 }

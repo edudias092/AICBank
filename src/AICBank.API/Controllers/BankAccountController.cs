@@ -229,7 +229,7 @@ public class BankAccountController : ControllerBase
 
             if(result == null || !result.Success)
             {
-                return NotFound();
+                return NotFound(string.Join(",", result.Errors));
             }
 
             return Ok(result);
@@ -257,7 +257,7 @@ public class BankAccountController : ControllerBase
 
             if(result == null || !result.Success)
             {
-                return NotFound();
+                return NotFound(string.Join(",", result.Errors));
             }
 
             return Ok(result);
@@ -285,7 +285,98 @@ public class BankAccountController : ControllerBase
 
             if(result is not { Success: true })
             {
-                return NotFound();
+                return NotFound(string.Join(",", result.Errors));
+            }
+
+            return Ok(result);
+        }
+        catch(InvalidOperationException ex)
+        {
+            _logger.LogError(ex.Message);
+
+            return BadRequest(ex.Message);
+        }
+        catch(Exception ex)
+        {
+            _logger.LogCritical(ex, "Erro inesperado");
+            
+            return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro inesperado");
+        }
+    }
+
+    [HttpGet("{id:int}/balance")]
+    public async Task<IActionResult> GetBalance(int id)
+    {
+        try
+        {
+            var result = await _bankAccountService.GetBalance(id);
+
+            if(result is not { Success: true })
+            {
+                return NotFound(string.Join(",", result.Errors));
+            }
+
+            return Ok(result);
+        }
+        catch(InvalidOperationException ex)
+        {
+            _logger.LogError(ex.Message);
+
+            return BadRequest(ex.Message);
+        }
+        catch(Exception ex)
+        {
+            _logger.LogCritical(ex, "Erro inesperado");
+            
+            return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro inesperado");
+        }
+    }
+    
+    [HttpPost("{id:int}/payment")]
+    public async Task<IActionResult> MakePayment(int id, CelcashPaymentRequestDto paymentRequest)
+    {
+        ResponseDTO<CelcashPaymentResponseDto> result;
+        try
+        {
+            result = await _bankAccountService.MakePayment(id, paymentRequest);
+
+            if(!result.Success)
+            {
+                return BadRequest(result);
+            }
+
+            return Ok(result);
+        }
+        catch(InvalidOperationException ex)
+        {
+            _logger.LogError(ex.Message);
+
+            return BadRequest(new ResponseDTO<ChargeDTO>
+            {
+                Errors= [ex.Message]
+            });
+        }
+        catch(Exception ex)
+        {
+            _logger.LogCritical(ex, "Erro inesperado");
+
+            return StatusCode(StatusCodes.Status500InternalServerError, new ResponseDTO<ChargeDTO>
+            {
+                Errors= ["Ocorreu um erro inesperado."]
+            });
+        }
+    }
+    
+    [HttpGet("{id:int}/charges/sumByDate")]
+    public async Task<IActionResult> GetChargesSumByDate(int id)
+    {
+        try
+        {
+            var result = await _bankAccountService.GetChargesGroup(id);
+
+            if(result is not { Success: true })
+            {
+                return NotFound(string.Join(",", result.Errors));
             }
 
             return Ok(result);
