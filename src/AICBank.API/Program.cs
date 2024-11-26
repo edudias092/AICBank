@@ -86,7 +86,7 @@ builder.Services.AddAuthentication(opts => {
 
 builder.Services.AddControllers().AddJsonOptions(opts =>
 {
-    opts.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+    // opts.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
     opts.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault;
 });
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -109,5 +109,6 @@ app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 app.UseMiddleware<CustomJwtAuthorizationMiddleware>();
 // app.UseHttpsRedirection();
 app.MapControllers();
+app.UseStaticFiles();
 
 app.Run();

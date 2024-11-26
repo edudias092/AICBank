@@ -92,7 +92,9 @@ public class CelCashClientService : ICelCashClientService
     public async Task<CelcashSubaccountResponseDTO> CreateSubBankAccount(BankAccountDTO bankAccountDto)
     {
         var token = await CreateAuthToken(_mainGalaxId, _mainGalaxHash, ["company.write", "company.read"]);
-
+        
+        bankAccountDto.Logo = await ImageHelper.GetBase64LogoImage();
+        
         using var request = HttpRequestBuilder.Create("company/subaccount", HttpMethod.Post)
             .AddAuthorization("Bearer", token)
             .AddContent(JsonContent.Create(bankAccountDto, null, _jsonSerializerOptions))
@@ -127,27 +129,11 @@ public class CelCashClientService : ICelCashClientService
             .AddContent(JsonContent.Create(sendMandatoryDocumentsDto, null, _jsonSerializerOptions))
             .Build();
 
-        var response = await _httpClient.SendAsync(request);
-
-        if(response.IsSuccessStatusCode)
-        {
-            var content = await response.Content.ReadAsStringAsync();
-
-            var data = JsonSerializer.Deserialize<CelcashSubaccountResponseDTO>(content, _jsonSerializerOptions);
-
-            return data;
-        }
-        else{
-            var contentError = await response.Content.ReadAsStringAsync();
-            var data = JsonSerializer.Deserialize<CelcashSubaccountResponseDTO>(contentError, _jsonSerializerOptions);
-
-            return data;
-        }
+        return await _httpRequestSender.SendAsync<CelcashSubaccountResponseDTO>(request);
     }
 
     public async Task<BankStatementDTO> Movements(BankAccountDTO bankAccountDto, DateTime initialDate, DateTime finalDate)
     {
-        
         var token = await CreateAuthToken(bankAccountDto.GalaxId, bankAccountDto.GalaxHash, ["balance.read"]);
 
         string query = $"?initialDate={initialDate:yyyy-MM-dd}&finalDate={finalDate:yyyy-MM-dd}";
@@ -161,7 +147,6 @@ public class CelCashClientService : ICelCashClientService
 
     public async Task<CelcashChargeResponseDTO> CreateCharge(BankAccountDTO bankAccountDto, ChargeDTO chargeDto)
     {
-        //TODO: remover o main e deixar o da conta bancária.
         var token = await CreateAuthToken(bankAccountDto.GalaxId, bankAccountDto.GalaxHash, ["charges.write"]);
 
         using var request = HttpRequestBuilder.Create("charges", HttpMethod.Post)
@@ -175,9 +160,8 @@ public class CelCashClientService : ICelCashClientService
     public async Task<CelcashListChargeResponseDTO> GetCharges(BankAccountDTO bankAccountDto, DateTime? initialDate,
         DateTime? finalDate)
     {
-        //TODO: remover o main e deixar o da conta bancária.
         var token = await CreateAuthToken(bankAccountDto.GalaxId, bankAccountDto.GalaxHash, ["charges.read"]);
-        var uriBuilder = new UriBuilder(_httpClient.BaseAddress) {Path = _httpClient.BaseAddress.AbsolutePath+"charges"};
+        var uriBuilder = new UriBuilder(_httpClient.BaseAddress!) {Path = _httpClient.BaseAddress.AbsolutePath+"charges"};
         var parameters = new Dictionary<string, string>();
 
         if(initialDate.HasValue) 
@@ -195,7 +179,7 @@ public class CelCashClientService : ICelCashClientService
             query[p.Key] = p.Value;
         }
 
-        uriBuilder.Query = query.ToString();
+        uriBuilder.Query = query.ToString()!;
         
         using var request = HttpRequestBuilder.Create(uriBuilder.Uri, HttpMethod.Get)
             .AddAuthorization("Bearer", token)
@@ -208,7 +192,7 @@ public class CelCashClientService : ICelCashClientService
     {
         //TODO: remover o main e deixar o da conta bancária.
         var token = await CreateAuthToken(bankAccountDto.GalaxId, bankAccountDto.GalaxHash, ["charges.read"]);
-        var uriBuilder = new UriBuilder(_httpClient.BaseAddress) {Path = _httpClient.BaseAddress.AbsolutePath+"charges"};
+        var uriBuilder = new UriBuilder(_httpClient.BaseAddress!) {Path = _httpClient.BaseAddress.AbsolutePath+"charges"};
         var parameters = new Dictionary<string, string>
         {
             { "startAt", "0" },
@@ -223,7 +207,7 @@ public class CelCashClientService : ICelCashClientService
             query[p.Key] = p.Value;
         }
 
-        uriBuilder.Query = query.ToString();
+        uriBuilder.Query = query.ToString()!;
 
         using var request = HttpRequestBuilder.Create(uriBuilder.Uri, HttpMethod.Get)
             .AddAuthorization("Bearer", token)

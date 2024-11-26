@@ -29,9 +29,7 @@ namespace AICBank.Data.Mapping
                     .HasColumnType("varchar(255)")
                     .IsRequired();
 
-            builder.Property(x => x.Logo)
-                    .HasColumnType("text")
-                    .IsRequired(false);
+            builder.Ignore(x => x.Logo);
 
             builder.Property(x => x.SoftDescriptor)
                     .HasColumnType("varchar(18)")

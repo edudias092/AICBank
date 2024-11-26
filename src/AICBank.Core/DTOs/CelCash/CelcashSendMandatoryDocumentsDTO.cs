@@ -9,26 +9,64 @@ namespace AICBank.Core.DTOs.CelCash
 
         [JsonPropertyName("Documents")]
         public DocumentsDTO Documents { get; set; }
+        [JsonPropertyName("Associate")]
+        public AssociateDTO[] Associate { get; set; }
 
         public static CelcashSendMandatoryDocumentsDTO FromMandatoryDocumentsDto(
-            MandatoryDocumentsDTO mandatoryDocumentsDTO)
+            MandatoryDocumentsDTO mandatoryDocumentsDto)
         {
-            return new CelcashSendMandatoryDocumentsDTO
+            var dto = new CelcashSendMandatoryDocumentsDTO
             {
                 Fields = new FieldsDTO
                 {
-                    About = mandatoryDocumentsDTO.About,
-                    BirthDate = mandatoryDocumentsDTO.BirthDate,
-                    MonthlyIncome = mandatoryDocumentsDTO.MonthlyIncome,
-                    MotherName = mandatoryDocumentsDTO.MotherName,
-                    SocialMediaLink = mandatoryDocumentsDTO.SocialMediaLink
+                    About = mandatoryDocumentsDto.About,
+                    BirthDate = mandatoryDocumentsDto.BirthDate,
+                    MonthlyIncome = mandatoryDocumentsDto.MonthlyIncome,
+                    MotherName = mandatoryDocumentsDto.MotherName,
+                    SocialMediaLink = mandatoryDocumentsDto.SocialMediaLink
                 },
                 Documents = new DocumentsDTO
                 {
-                    Personal = new PersonalDocumentsDTO()
+                    Personal = new PersonalDocumentsDTO(),
+                    Company = new CompanyDocumentsDTO()
+                },
+                Associate = new AssociateDTO[]
+                {
+                    new AssociateDTO{
+                        MotherName = mandatoryDocumentsDto.MotherName,
+                        BirthDate = mandatoryDocumentsDto.BirthDate
+                    }
                 }
+                
             };
+
+            if (mandatoryDocumentsDto.AssociateDocument != null)
+            {
+                dto.Associate[0].Document = mandatoryDocumentsDto.AssociateDocument;
+            }
+            if (mandatoryDocumentsDto.AssociateName != null)
+            {
+                dto.Associate[0].Name = mandatoryDocumentsDto.AssociateName;
+            }
+            if (mandatoryDocumentsDto.AssociateType != null)
+            {
+                dto.Associate[0].Type = mandatoryDocumentsDto.AssociateType;
+            }
+
+            return dto;
         }
+    }
+
+    public class AssociateDTO
+    {
+        public string Document { get; set; }
+        public string Name { get; set; }
+        public string MotherName { get; set; }
+        public string Type { get; set; }
+        [JsonIgnore]
+        public DateTime BirthDate { get; set; }
+        [JsonPropertyName("birthDate")]
+        public string BirthDateString { get => BirthDate.ToString("yyyy-MM-dd");}
     }
 
     public class FieldsDTO 
@@ -48,7 +86,18 @@ namespace AICBank.Core.DTOs.CelCash
     public class DocumentsDTO
     {
         [JsonPropertyName("Personal")]
-        public PersonalDocumentsDTO Personal { get; set; }    
+        public PersonalDocumentsDTO Personal { get; set; }
+        
+        [JsonPropertyName("Company")]
+        public CompanyDocumentsDTO Company { get; set; }
+    }
+
+    public class CompanyDocumentsDTO
+    {
+        public string LastContract { get; set; }
+        public string CnpjCard { get; set; }
+        public string ElectionRecord { get; set; }
+        public string Statute { get; set; }
     }
 
     public class PersonalDocumentsDTO 
