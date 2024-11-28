@@ -350,21 +350,62 @@ public class BankAccountService(
         };
     }
     
-    public async Task<ResponseDTO<IEnumerable<IGrouping<DateTime, CelcashChargeDTO>>>> GetChargesGroup(int bankAccountId)
+    public async Task<ResponseDTO<Dictionary<string, decimal>>> GetChargesSumByDate(int bankAccountId)
     {
         var existingBankAccount = await GetBankAccount(bankAccountId);
         var bankAccountDto = mapper.Map<BankAccountDTO>(existingBankAccount);
+
+        var startDate = DateTime.Today.AddDays(-7);
+        var endDate = DateTime.Today.AddDays(7);
+        var result = await celCashClientService.GetCharges(bankAccountDto, startDate, endDate);
         
-        var result = await celCashClientService.GetCharges(bankAccountDto, DateTime.Today.AddDays(-7), DateTime.Today);
         var chargeSumByDate = new Dictionary<string, decimal>();
+        var countOfDays = (endDate - startDate).Days;
+        
         if (result.Error == null)
         {
             var groups = result.Charges.GroupBy(x => x.Transactions.FirstOrDefault()!.PayDay);
             
-            return new ResponseDTO<IEnumerable<IGrouping<DateTime, CelcashChargeDTO>>>() { Data = groups, Success = true };
+            for (var i = 0; i <= countOfDays; i++)
+            {
+                var date = startDate.AddDays(i);
+                var group = groups.FirstOrDefault(x => x.Key == date);
+                chargeSumByDate.Add(date.ToString("dd/MM/yyyy"), group?.Sum(x => Convert.ToDecimal(x.Value)) ?? 0m);
+            }
+            
+            return new ResponseDTO<Dictionary<string, decimal>> { Data = chargeSumByDate, Success = true };
         }
 
-        return new ResponseDTO<IEnumerable<IGrouping<DateTime, CelcashChargeDTO>>>() { Data = null, Success = false };
+        return new ResponseDTO<Dictionary<string, decimal>> { Data = null, Success = false };
+    }
+    
+    public async Task<ResponseDTO<Dictionary<string, decimal>>> GetChargesSumWeekly(int bankAccountId)
+    {
+        var existingBankAccount = await GetBankAccount(bankAccountId);
+        var bankAccountDto = mapper.Map<BankAccountDTO>(existingBankAccount);
+
+        var startDate = DateTime.Today.AddDays(-7);
+        var endDate = DateTime.Today;
+        var result = await celCashClientService.GetCharges(bankAccountDto, startDate, endDate);
+        
+        var chargeSumByDate = new Dictionary<string, decimal>();
+        var countOfDays = (endDate - startDate).Days;
+        
+        if (result.Error == null)
+        {
+            var groups = result.Charges.GroupBy(x => x.Transactions.FirstOrDefault()!.PayDay);
+            
+            for (var i = 0; i <= countOfDays; i++)
+            {
+                var date = startDate.AddDays(i);
+                var group = groups.FirstOrDefault(x => x.Key == date);
+                chargeSumByDate.Add(date.ToString("dd/MM/yyyy"), group?.Sum(x => Convert.ToDecimal(x.Value)) ?? 0m);
+            }
+            
+            return new ResponseDTO<Dictionary<string, decimal>> { Data = chargeSumByDate, Success = true };
+        }
+
+        return new ResponseDTO<Dictionary<string, decimal>> { Data = null, Success = false };
     }
     
     private async Task<BankAccount> GetBankAccount(int bankAccountId)

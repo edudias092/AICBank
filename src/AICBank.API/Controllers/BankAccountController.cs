@@ -372,7 +372,35 @@ public class BankAccountController : ControllerBase
     {
         try
         {
-            var result = await _bankAccountService.GetChargesGroup(id);
+            var result = await _bankAccountService.GetChargesSumByDate(id);
+
+            if(result is not { Success: true })
+            {
+                return NotFound(string.Join(",", result.Errors));
+            }
+
+            return Ok(result);
+        }
+        catch(InvalidOperationException ex)
+        {
+            _logger.LogError(ex.Message);
+
+            return BadRequest(ex.Message);
+        }
+        catch(Exception ex)
+        {
+            _logger.LogCritical(ex, "Erro inesperado");
+            
+            return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro inesperado");
+        }
+    }
+    
+    [HttpGet("{id:int}/charges/sumWeekly")]
+    public async Task<IActionResult> GetChargesSumWeekly(int id)
+    {
+        try
+        {
+            var result = await _bankAccountService.GetChargesSumWeekly(id);
 
             if(result is not { Success: true })
             {

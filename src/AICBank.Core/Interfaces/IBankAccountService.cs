@@ -20,5 +20,6 @@ public interface IBankAccountService
     Task<ResponseDTO<bool>> CancelCharge(int bankAccountId, string chargeId);
     Task<ResponseDTO<CelcashBalanceResponseDto>> GetBalance(int bankAccountId);
     Task<ResponseDTO<CelcashPaymentResponseDto>> MakePayment(int bankAccountId, CelcashPaymentRequestDto paymentRequest);
-    Task<ResponseDTO<IEnumerable<IGrouping<DateTime, CelcashChargeDTO>>>> GetChargesGroup(int bankAccountId);
+    Task<ResponseDTO<Dictionary<string, decimal>>> GetChargesSumByDate(int bankAccountId);
+    Task<ResponseDTO<Dictionary<string, decimal>>> GetChargesSumWeekly(int bankAccountId);
 }
