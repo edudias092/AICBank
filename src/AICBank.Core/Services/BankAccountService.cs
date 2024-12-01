@@ -15,7 +15,8 @@ public class BankAccountService(
     IBankAccountRepository bankAccountRepository,
     IMapper mapper,
     IHttpContextAccessor contextAccessor,
-    ICelCashClientService celCashClientService)
+    ICelCashClientService celCashClientService,
+    IEmailService emailService)
     : IBankAccountService
 {
     private readonly HttpContext _httpContext = contextAccessor.HttpContext ?? throw new ApplicationException("Couldn't get the httpContext.");
@@ -56,6 +57,8 @@ public class BankAccountService(
         
         bankAccountDto = mapper.Map<BankAccountDTO>(bankAccount);
 
+        await emailService.SendEmailAsync("Bem-vindo ao AIC BANK!", bankAccountDto);
+        
         return new ResponseDTO<BankAccountDTO>
         {
             Success = true,
@@ -243,7 +246,6 @@ public class BankAccountService(
             Errors = [],
             Data = bankAccountDto
         };
-
     }
 
     public async Task<ResponseDTO<BankStatementDTO>> GetMovements(int bankAccountId, DateTime initialDate, DateTime finalDate)
