@@ -5,6 +5,7 @@ pool:
   vmImage: ubuntu-latest
 
 variables:
+  buildConfiguration: 'Release'
   CelCash_galaxId: ${{ variables.CelCash_galaxId }}
   CelCash_galaxHash: ${{ variables.CelCash_galaxHash }}
   CelCash_baseUrl: ${{ variables.CelCash_baseUrl }}
