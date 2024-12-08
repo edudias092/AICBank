@@ -39,12 +39,11 @@ steps:
       dotnet publish $(API_PATH) --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)
     displayName: 'Publish'
     
-  # Tarefa FileTransform para aplicar transformações no appsettings.json
-  - task: FileTransform@2
+  - task: FileTransform@1
+    displayName: 'Transformar appsettings.json'
     inputs:
-      folderPath: '$(System.DefaultWorkingDirectory)'
-      enableXmlTransform: false
-      jsonTargetFiles: 'appsettings.json'
+      folderPath: '$(Build.ArtifactStagingDirectory)' # Caminho do diretório base
+      targetFiles: '**/appsettings.json' # Arquivo que será transformado
     
   - task: PublishBuildArtifacts@1
     inputs:
