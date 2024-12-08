@@ -37,7 +37,16 @@ steps:
   - script: |
       dotnet publish --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)
     displayName: 'Publish'
-
+    
+  # Tarefa FileTransform para aplicar transformações no appsettings.json
+  - task: FileTransform@1
+    inputs:
+      folderPath: '$(Build.ArtifactStagingDirectory)'  # Pasta com os artefatos
+      fileType: 'json'  # Tipo de arquivo que será transformado (appsettings.json é JSON)
+      targetFiles: '**/appsettings.json'  # Arquivo alvo que será transformado
+      transformType: 'VariableSubstitution'  # Substituir variáveis no arquivo
+    displayName: 'Substituir variáveis no appsettings.json'
+    
   - task: PublishBuildArtifacts@1
     inputs:
       PathtoPublish: $(Build.ArtifactStagingDirectory)
