@@ -18,6 +18,7 @@ variables:
   Email_Port: ${{ variables.Email_Port }}
   Email_User: ${{ variables.Email_User }}
   Email_Password: ${{ variables.Email_Password }}
+  API_PATH: "src/AICBank.API/"
 
 steps:
   - task: UseDotNet@2
@@ -31,11 +32,11 @@ steps:
     displayName: 'Restaurar pacotes Nuget'
 
   - script: |
-      dotnet build --configuration $(buildConfiguration)
+      dotnet build $(API_PATH) --configuration $(buildConfiguration)
     displayName: 'Build'
 
   - script: |
-      dotnet publish --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)
+      dotnet publish $(API_PATH) --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)
     displayName: 'Publish'
     
   # Tarefa FileTransform para aplicar transformações no appsettings.json
