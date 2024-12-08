@@ -13,6 +13,10 @@ variables:
   JWT_Issuer: ${{ variables.JWT_Issuer }}
   JWT_Audience: ${{ variables.JWT_Audience }}
   ConnectionStrings_AICBankDbConnString: ${{ variables.ConnectionStrings_AICBankDbConnString }}
+  Email_Smtp: ${{ variables.Email_Smtp }}
+  Email_Port: ${{ variables.Email_Port }}
+  Email_User: ${{ variables.Email_User }}
+  Email_Password: ${{ variables.Email_Password }}
 
 steps:
   - task: UseDotNet@2
@@ -49,14 +53,14 @@ steps:
       chmod 600 ~/.ssh/id_rsa
 
       # Usar SCP para copiar os arquivos para o servidor VPS
-      scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -r $(Build.ArtifactStagingDirectory)/* root@207.244.247.46:/sistemas/sistema-agendamentos
+      scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -r $(Build.ArtifactStagingDirectory)/* root@207.244.247.46:/sistemas/aicbank/api
     displayName: 'Copiar arquivos para o VPS'
 
-  - script: |
-      mkdir -p ~/.ssh
-      cp $(Agent.TempDirectory)/id_rsa ~/.ssh/id_rsa
-      chmod 600 ~/.ssh/id_rsa
+  # - script: |
+  #     mkdir -p ~/.ssh
+  #     cp $(Agent.TempDirectory)/id_rsa ~/.ssh/id_rsa
+  #     chmod 600 ~/.ssh/id_rsa
       
-      ssh -i ~/.ssh/id_rsa root@207.244.247.46
-      sudo systemctl restart sistema-agendamentos
-    displayName: 'Reiniciar o Serviço'
+  #     ssh -i ~/.ssh/id_rsa root@207.244.247.46
+  #     sudo systemctl restart sistema-agendamentos
+  #   displayName: 'Reiniciar o Serviço'
