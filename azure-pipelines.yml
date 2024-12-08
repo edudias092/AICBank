@@ -6,18 +6,18 @@ pool:
 
 variables:
   buildConfiguration: 'Release'
-  CelCash:galaxId: ${{ variables.CelCash_galaxId }}
-  CelCash:galaxHash: ${{ variables.CelCash_galaxHash }}
-  CelCash:baseUrl: ${{ variables.CelCash_baseUrl }}
-  JWT:TokenValidityInMinutes: ${{ variables.JWT_TokenValidityInMinutes }}
-  JWT:SecretKey: ${{ variables.JWT_SecretKey }}
-  JWT:Issuer: ${{ variables.JWT_Issuer }}
-  JWT:Audience: ${{ variables.JWT_Audience }}
-  ConnectionStrings:AICBankDbConnString: ${{ variables.ConnectionStrings_AICBankDbConnString }}
-  Email:Smtp: ${{ variables.Email_Smtp }}
-  Email:Port: ${{ variables.Email_Port }}
-  Email:User: ${{ variables.Email_User }}
-  Email:Password: ${{ variables.Email_Password }}
+  CelCash.galaxId: ${{ variables.CelCash_galaxId }}
+  CelCash.galaxHash: ${{ variables.CelCash_galaxHash }}
+  CelCash.baseUrl: ${{ variables.CelCash_baseUrl }}
+  JWT.TokenValidityInMinutes: ${{ variables.JWT_TokenValidityInMinutes }}
+  JWT.SecretKey: ${{ variables.JWT_SecretKey }}
+  JWT.Issuer: ${{ variables.JWT_Issuer }}
+  JWT.Audience: ${{ variables.JWT_Audience }}
+  ConnectionStrings.AICBankDbConnString: ${{ variables.ConnectionStrings_AICBankDbConnString }}
+  Email.Smtp: ${{ variables.Email_Smtp }}
+  Email.Port: ${{ variables.Email_Port }}
+  Email.User: ${{ variables.Email_User }}
+  Email.Password: ${{ variables.Email_Password }}
   API_PATH: "src/AICBank.API/"
 
 steps:
@@ -39,11 +39,11 @@ steps:
       dotnet publish $(API_PATH) --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)
     displayName: 'Publish'
     
-  - task: FileTransform@1
+  - task: FileTransform@2
     displayName: 'Transformar appsettings.json'
     inputs:
-      folderPath: '$(Build.ArtifactStagingDirectory)' # Caminho do diretório base
-      targetFiles: '**/appsettings.json' # Arquivo que será transformado
+      folderPath: '$(System.DefaultWorkingDirectory)'
+      jsonTargetFiles: '**/appsettings.json'
     
   - task: PublishBuildArtifacts@1
     inputs:
