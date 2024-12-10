@@ -36,7 +36,7 @@ steps:
     displayName: 'Build'
 
   - script: |
-      dotnet publish $(API_PATH) --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)
+      dotnet publish --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)
     displayName: 'Publish'
     
   - task: PublishBuildArtifacts@1
