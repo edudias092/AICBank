@@ -32,18 +32,12 @@ steps:
     displayName: 'Restaurar pacotes Nuget'
 
   - script: |
-      dotnet build $(API_PATH) --configuration $(buildConfiguration)
+      dotnet build --configuration $(buildConfiguration)
     displayName: 'Build'
 
   - script: |
       dotnet publish $(API_PATH) --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)
     displayName: 'Publish'
-      
-  # Substituir tokens no arquivo copiado
-  - task: qetza.replacetokens.replacetokens-task.replacetokens@3
-    displayName: 'Substituir Tokens no arquivo de build'
-    inputs:
-      targetFiles: '$(Build.ArtifactStagingDirectory)/appsettings.json'
     
   - task: PublishBuildArtifacts@1
     inputs:
