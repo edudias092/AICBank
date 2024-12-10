@@ -34,9 +34,9 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>()
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient();
 
-builder.Services.AddSerilog(config => config
-                .WriteTo.GrafanaLoki("http://localhost:3100")
-                .ReadFrom.Configuration(builder.Configuration));
+// builder.Services.AddSerilog(config => config
+//                 .WriteTo.GrafanaLoki("http://localhost:3100")                
+//                 .ReadFrom.Configuration(builder.Configuration));
 
 Log.Information("Starting web server...");
 
