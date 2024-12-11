@@ -38,6 +38,9 @@ builder.Services.AddHttpClient();
 //                 .WriteTo.GrafanaLoki("http://localhost:3100")                
 //                 .ReadFrom.Configuration(builder.Configuration));
 
+builder.Services.AddSerilog(cfg => cfg
+    .WriteTo.File("log.txt", rollingInterval: RollingInterval.Day));
+
 Log.Information("Starting web server...");
 
 builder.Services.AddLogging();
@@ -74,16 +77,6 @@ builder.Services.AddAuthentication(opts => {
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
     };
 });
-
-// Configuração da autorização com a política "Bearer"
-// builder.Services.AddAuthorization(options =>
-// {
-//     options.AddPolicy(JwtBearerDefaults.AuthenticationScheme, policy =>
-//     {
-//         policy.RequireAuthenticatedUser();
-//         policy.AuthenticationSchemes.Add(JwtBearerDefaults.AuthenticationScheme);
-//     });
-// });
 
 builder.Services.AddControllers().AddJsonOptions(opts =>
 {
