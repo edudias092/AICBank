@@ -33,6 +33,7 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>()
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient();
+builder.Services.AddMemoryCache();
 
 // builder.Services.AddSerilog(config => config
 //                 .WriteTo.GrafanaLoki("http://localhost:3100")                

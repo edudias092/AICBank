@@ -2,6 +2,7 @@ using System;
 using System.Data.Common;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -12,6 +13,7 @@ using AICBank.Core.DTOs;
 using AICBank.Core.DTOs.CelCash;
 using AICBank.Core.Interfaces;
 using AICBank.Core.Util;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -25,12 +27,21 @@ public class CelCashClientService : ICelCashClientService
     private readonly JsonSerializerOptions _jsonSerializerOptions;
     private readonly ILogger<CelCashClientService> _logger;
     private readonly HttpRequestSender _httpRequestSender;
+    private readonly IMemoryCache _cache;
+
+    private string TokenFormat = "{0}-{1}";
+    
     public CelCashClientService(IConfiguration config, 
                                 IHttpClientFactory httpClientFactory, 
                                 ILogger<CelCashClientService> logger,
-                                ILogger<HttpRequestSender> loggerSender)
+                                ILogger<HttpRequestSender> loggerSender,
+                                IMemoryCache cache)
     {
         _httpClient = httpClientFactory.CreateClient("CelCashHttpClient");
+        _httpClient.DefaultRequestHeaders.UserAgent.Add(
+            new ProductInfoHeaderValue("AicBank", Assembly.GetExecutingAssembly().GetName().Version.ToString())
+        );
+        
         _logger = logger;
 
         string baseCelCashUrl = config.GetSection("CelCash").GetValue<string>("baseUrl");
@@ -49,6 +60,8 @@ public class CelCashClientService : ICelCashClientService
         };
 
         _httpRequestSender = new HttpRequestSender(_httpClient, _jsonSerializerOptions, loggerSender);
+        
+        _cache = cache;
     }
 
     private string GetBase64EncodedToken(string galaxId,string galaxHash)
@@ -60,6 +73,11 @@ public class CelCashClientService : ICelCashClientService
     
     private async Task<string> CreateAuthToken(string galaxId, string galaxHash, string[] permissions)
     {
+        var tokenInCache = _cache.Get(string.Format(TokenFormat, galaxId, string.Join("|", permissions)));
+
+        if (tokenInCache != null)
+            return tokenInCache.ToString();
+        
         var token = GetBase64EncodedToken(galaxId, galaxHash);
         var content = JsonContent.Create(new CelcashTokenRequestDTO
         {
@@ -79,6 +97,10 @@ public class CelCashClientService : ICelCashClientService
             var convertedReponse = JsonSerializer.Deserialize<CelcashTokenResponseDTO>(
                                                     contentString, _jsonSerializerOptions);
 
+            var cacheKey = string.Format(TokenFormat, galaxId, string.Join("|", permissions));
+            _cache.Set(cacheKey, convertedReponse.AccessToken,
+                TimeSpan.FromSeconds(convertedReponse.ExpiresIn));
+            
             return convertedReponse.AccessToken;
         }
         else{
