@@ -85,6 +85,8 @@ public class CelCashClientService : ICelCashClientService
             Scope = string.Join(" ", permissions)
         });
         
+        _logger.LogDebug($"Requisição token: {await content.ReadAsStringAsync()}");
+        
         using var request = HttpRequestBuilder.Create("token", HttpMethod.Post)
             .AddAuthorization("Basic", token)
             .AddContent(content)
@@ -95,7 +97,7 @@ public class CelCashClientService : ICelCashClientService
         if(response.IsSuccessStatusCode){
             var contentString = await response.Content.ReadAsStringAsync();
             
-            _logger.LogDebug(contentString);
+            _logger.LogDebug($"Resposta Api: {contentString}");
             
             var convertedReponse = JsonSerializer.Deserialize<CelcashTokenResponseDTO>(
                                                     contentString, _jsonSerializerOptions);
