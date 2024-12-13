@@ -85,7 +85,7 @@ public class CelCashClientService : ICelCashClientService
             Scope = string.Join(" ", permissions)
         });
         
-        _logger.LogError($"Requisição token: {await content.ReadAsStringAsync()}");
+        _logger.LogError($"GalaxId:{galaxId}, Hash: {galaxHash}, base64: {token}. Requisição token: {await content.ReadAsStringAsync()}");
         
         using var request = HttpRequestBuilder.Create("token", HttpMethod.Post)
             .AddAuthorization("Basic", token)
