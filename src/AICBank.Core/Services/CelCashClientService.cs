@@ -94,6 +94,9 @@ public class CelCashClientService : ICelCashClientService
 
         if(response.IsSuccessStatusCode){
             var contentString = await response.Content.ReadAsStringAsync();
+            
+            _logger.LogDebug(contentString);
+            
             var convertedReponse = JsonSerializer.Deserialize<CelcashTokenResponseDTO>(
                                                     contentString, _jsonSerializerOptions);
 
@@ -105,6 +108,9 @@ public class CelCashClientService : ICelCashClientService
         }
         else{
             var contentString = await response.Content.ReadAsStringAsync();
+            
+            _logger.LogDebug(contentString);
+
             _logger.LogError("Erro ao obter o token. Response Content: {0}", contentString);
 
             throw new InvalidOperationException("Erro ao obter o token");
