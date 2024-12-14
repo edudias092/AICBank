@@ -1,9 +1,10 @@
 using AICBank.Core.DTOs;
+using AICBank.Core.Email;
 using AICBank.Core.Services;
 
 namespace AICBank.Core.Interfaces;
 
 public interface IEmailService
 {
-    Task SendEmailAsync(string subject, BankAccountDTO bankAccountDto);
+    Task SendEmailAsync(IEmailMessageBuilder messageBuilder);
 }

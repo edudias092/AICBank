@@ -1,4 +1,3 @@
-using System;
 using System.IdentityModel.Tokens.Jwt;
 
 namespace AICBank.API.Middlewares;

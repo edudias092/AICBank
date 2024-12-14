@@ -23,7 +23,9 @@ public class HttpRequestSender
         if (response.IsSuccessStatusCode)
         {
             var content = await response.Content.ReadAsStringAsync();
-
+            
+            _logger.LogInformation(content);
+            
             return handler == null ? JsonSerializer.Deserialize<T>(content, _jsonSerializerOptions) : handler(content);
         }
 

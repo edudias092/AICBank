@@ -1,7 +1,6 @@
 using AICBank.Core.DTOs;
 using AICBank.Core.Services;
 using FluentValidation;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AICBank.API.Controllers

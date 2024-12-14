@@ -1,6 +1,7 @@
 using System.Net.Http.Headers;
 using AICBank.Core.DTOs;
 using AICBank.Core.DTOs.CelCash;
+using AICBank.Core.Email;
 using AICBank.Core.Entities;
 using AICBank.Core.Interfaces;
 using AICBank.Core.Util;
@@ -57,7 +58,7 @@ public class BankAccountService(
         
         bankAccountDto = mapper.Map<BankAccountDTO>(bankAccount);
 
-        await emailService.SendEmailAsync("Bem-vindo ao AIC BANK!", bankAccountDto);
+        await emailService.SendEmailAsync(new BankAccountSavedMessageBuilder(bankAccountDto));
         
         return new ResponseDTO<BankAccountDTO>
         {
