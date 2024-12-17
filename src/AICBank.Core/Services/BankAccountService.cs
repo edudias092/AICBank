@@ -143,7 +143,7 @@ public class BankAccountService(
     {
         var result = await celCashClientService.CreateSubBankAccount(bankAccountDto);
 
-        if (!result.Type || result.Company == null)
+        if (!result.Type || result.CelcashCompany == null)
             return new ResponseDTO<BankAccountDTO>()
             {
                 Success = false,
@@ -151,8 +151,8 @@ public class BankAccountService(
                 Errors = [ErrorMapper.MapErrors(result.Error)],
             };
         
-        bankAccountDto.GalaxHash = result.Company.ApiAuth.GalaxHash;
-        bankAccountDto.GalaxId = result.Company.ApiAuth.GalaxId.ToString();
+        bankAccountDto.GalaxHash = result.CelcashCompany.ApiAuth.GalaxHash;
+        bankAccountDto.GalaxId = result.CelcashCompany.ApiAuth.GalaxId.ToString();
 
         return new ResponseDTO<BankAccountDTO>()
         {

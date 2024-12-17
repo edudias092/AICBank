@@ -58,8 +58,7 @@ public static class ServicesConfiguration
         });
 
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-        serviceCollection.AddEndpointsApiExplorer();
-        serviceCollection.AddSwaggerGen();
+        
     }
 
     public static void AddAuthenticationConfigurations(this IServiceCollection serviceCollection,

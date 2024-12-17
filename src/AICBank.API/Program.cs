@@ -9,6 +9,9 @@ builder.Services.AddDefaultConfigurations(builder.Configuration);
 builder.Services.AddInternalServices();
 builder.Services.AddAuthenticationConfigurations(builder.Configuration);
 
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
 Log.Information("Starting web server...");
 var app = builder.Build();
 
@@ -18,8 +21,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseAuthorization();
 app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
-app.UseMiddleware<CustomJwtAuthorizationMiddleware>();
 app.MapControllers();
 app.UseStaticFiles();
 
