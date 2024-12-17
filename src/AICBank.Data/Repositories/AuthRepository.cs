@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using AICBank.Core.DTOs;
 using AICBank.Core.Interfaces;
@@ -35,21 +36,30 @@ namespace AICBank.Data.Repositories
 
         public async Task<List<IdentityClaimDTO>> GetUserClaims(string email)
         {
-            var claims = await _userManager.GetClaimsAsync(new IdentityUser {
-                Email = email,
-                UserName = email
-            });
-
-            if(claims != null){
-                var claimsDTO = claims.Select(x => new IdentityClaimDTO {
+            var identityUser = await _userManager.FindByEmailAsync(email);
+            var claims = await _userManager.GetClaimsAsync(identityUser);
+            var roles = await _userManager.GetRolesAsync(identityUser);
+            var allClaims = Enumerable.Empty<IdentityClaimDTO>().ToList();
+            
+            if(claims?.Any() ?? false)
+            {
+                allClaims.AddRange(claims.Select(x => new IdentityClaimDTO
+                {
                     Type = x.Type,
                     Value = x.Value
-                });
-
-                return claimsDTO.ToList();
+                }));
             }
 
-            return Enumerable.Empty<IdentityClaimDTO>().ToList();
+            if (roles?.Any() ?? false)
+            {
+                allClaims.AddRange(roles.Select(r => new IdentityClaimDTO()
+                {   
+                    Type = ClaimTypes.Role,
+                    Value = r
+                }));
+            }
+
+            return allClaims;
         }
 
         public async Task<AuthResult> Login(string email, string password)

@@ -1,6 +1,7 @@
 using System.Net.Http.Headers;
 using AICBank.Core.DTOs;
 using AICBank.Core.DTOs.CelCash;
+using AICBank.Core.Email;
 using AICBank.Core.Entities;
 using AICBank.Core.Interfaces;
 using AICBank.Core.Util;
@@ -57,7 +58,7 @@ public class BankAccountService(
         
         bankAccountDto = mapper.Map<BankAccountDTO>(bankAccount);
 
-        await emailService.SendEmailAsync("Bem-vindo ao AIC BANK!", bankAccountDto);
+        await emailService.SendEmailAsync(new BankAccountSavedMessageBuilder(bankAccountDto));
         
         return new ResponseDTO<BankAccountDTO>
         {
@@ -142,7 +143,7 @@ public class BankAccountService(
     {
         var result = await celCashClientService.CreateSubBankAccount(bankAccountDto);
 
-        if (!result.Type || result.Company == null)
+        if (!result.Type || result.CelcashCompany == null)
             return new ResponseDTO<BankAccountDTO>()
             {
                 Success = false,
@@ -150,8 +151,8 @@ public class BankAccountService(
                 Errors = [ErrorMapper.MapErrors(result.Error)],
             };
         
-        bankAccountDto.GalaxHash = result.Company.ApiAuth.GalaxHash;
-        bankAccountDto.GalaxId = result.Company.ApiAuth.GalaxId.ToString();
+        bankAccountDto.GalaxHash = result.CelcashCompany.ApiAuth.GalaxHash;
+        bankAccountDto.GalaxId = result.CelcashCompany.ApiAuth.GalaxId.ToString();
 
         return new ResponseDTO<BankAccountDTO>()
         {

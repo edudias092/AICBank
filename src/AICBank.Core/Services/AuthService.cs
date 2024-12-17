@@ -108,6 +108,7 @@ namespace AICBank.Core.Services
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim("AccountUserId", user.Id.ToString())
             };
+            
             claims.AddRange(claimsDTO.Select(c => new Claim(c.Type, c.Value)));
 
             var key = Encoding.UTF8.GetBytes(secretKey);

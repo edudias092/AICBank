@@ -1,10 +1,13 @@
 using AICBank.Core.DTOs;
 using AICBank.Core.DTOs.CelCash;
 using AICBank.Core.Interfaces;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AICBank.API.Controllers;
 
+[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 [Route("api/[controller]")]
 [ApiController]
 public class BankAccountController : ControllerBase

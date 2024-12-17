@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
 using AICBank.Core.Interfaces;
 using AICBank.Core.Util.Extensions;
 
@@ -27,9 +23,6 @@ namespace AICBank.API.Middlewares
 
                 return;
             }
-
-            // var roleAdmin = httpContext.User.Claims.FirstOrDefault(c => c.Type == "UserType");
-            // if(roleAdmin != null && roleAdmin.Value == "Admin")
 
             var menusAndRoles = new Dictionary<string,string>{
                 {"bankAccount", "Admin,Managers"}

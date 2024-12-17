@@ -1,4 +1,3 @@
-using System;
 using System.IdentityModel.Tokens.Jwt;
 
 namespace AICBank.API.Middlewares;
@@ -6,7 +5,12 @@ namespace AICBank.API.Middlewares;
 public class CustomJwtAuthorizationMiddleware
 {
     private readonly RequestDelegate _next;
-    private List<AppRoute> _openRoutes = new List<AppRoute>();
+    private List<AppRoute> _openRoutes = new ();
+
+    private List<AppRoute> _adminRoutes = new ()
+    {
+        new AppRoute("subaccounts", "/config"),
+    };
     
     public record AppRoute(string Action, string Controller);
 
@@ -27,10 +31,8 @@ public class CustomJwtAuthorizationMiddleware
             {
                 var jwtToken = handler.ReadJwtToken(token);
                 
-                // Agora você pode acessar as claims do JWT:
                 var claims = jwtToken.Claims;
 
-                // Exemplo: adicionar uma claim ao contexto do usuário
                 context.User.AddIdentity(new System.Security.Claims.ClaimsIdentity(claims));
             }
         }
@@ -65,6 +67,14 @@ public class CustomJwtAuthorizationMiddleware
         var action = routeVals["action"]?.ToString();
         var controller = routeVals["controller"]?.ToString();
 
+        // if (_adminRoutes.Any(x => x.Action == action && x.Controller == controller))
+        // {
+        //     if (!context.User.Claims.Any(x => x.Type == "Roles" && x.Value == "Admin"))
+        //     {
+        //         return false;
+        //     }
+        // }
+        
         if (!context.User.Identity.IsAuthenticated && !_openRoutes.Any(r => action == r.Action && controller == r.Controller))
         {
             return false;
