@@ -34,10 +34,10 @@ public class ConfigController : ControllerBase
                 return NotFound();
             }
 
-            return Ok(new ResponseDTO<CelcashListSubaccountResponseDto>()
+            return Ok(new ResponseDTO<CelcashCompanyDTO[]>()
             {
                 Success = true,
-                Data = subaccountList,
+                Data = subaccountList?.Subaccounts,
                 Errors = []
             });
         }

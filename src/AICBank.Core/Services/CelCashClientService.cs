@@ -272,6 +272,13 @@ public class CelCashClientService : ICelCashClientService
         CelcashFilterSubaccountDto filterSubaccountDto)
     {
         var token = await CreateAuthToken(_mainGalaxId, _mainGalaxHash, ["company.read"]);
+        const string cacheKey = "listSubaccounts";
+        if (_cache.Get(cacheKey) != null)
+        {
+            return JsonSerializer
+                            .Deserialize<CelcashListSubaccountResponseDto>(_cache.Get("listSubaccounts").ToString(),
+                                _jsonSerializerOptions);
+        }
         
         var uriBuilder = new UriBuilder(_httpClient.BaseAddress!)
         {
@@ -301,6 +308,13 @@ public class CelCashClientService : ICelCashClientService
             .AddAuthorization("Bearer", token)
             .Build();
         
-        return await _httpRequestSender.SendAsync<CelcashListSubaccountResponseDto>(request);
+        var result = await _httpRequestSender.SendAsync<CelcashListSubaccountResponseDto>(request);
+
+        if (result != null)
+        {
+            _cache.Set(cacheKey, JsonSerializer.Serialize(result, _jsonSerializerOptions), TimeSpan.FromMinutes(20));
+        }
+
+        return result;
     }
 }
