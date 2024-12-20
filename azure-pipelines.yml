@@ -46,20 +46,20 @@ steps:
       scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -r $(Build.ArtifactStagingDirectory)/* root@207.244.247.46:/sistemas/aicbank/api
     displayName: 'Copiar arquivos para o VPS'
 
-  - script: |
-      mkdir -p ~/.ssh
-      cp $(Agent.TempDirectory)/id_rsa ~/.ssh/id_rsa
-      chmod 600 ~/.ssh/id_rsa
-
-      ssh -i ~/.ssh/id_rsa root@207.244.247.46
-      cp /sistemas/config/aicbank/appsettings.json /sistemas/aicbank/api/appsettings.json
-    displayName: 'Copiar Arquivos de configuração'
-
-  - script: |
-      mkdir -p ~/.ssh
-      cp $(Agent.TempDirectory)/id_rsa ~/.ssh/id_rsa
-      chmod 600 ~/.ssh/id_rsa
-      
-      ssh -i ~/.ssh/id_rsa root@207.244.247.46
-      sudo systemctl restart aicbank
-    displayName: 'Reiniciar o Serviço'
+#  - script: |
+#      mkdir -p ~/.ssh
+#      cp $(Agent.TempDirectory)/id_rsa ~/.ssh/id_rsa
+#      chmod 600 ~/.ssh/id_rsa
+#
+#      ssh -i ~/.ssh/id_rsa root@207.244.247.46
+#      cp /sistemas/config/aicbank/appsettings.json /sistemas/aicbank/api/appsettings.json
+#    displayName: 'Copiar Arquivos de configuração'
+#
+#  - script: |
+#      mkdir -p ~/.ssh
+#      cp $(Agent.TempDirectory)/id_rsa ~/.ssh/id_rsa
+#      chmod 600 ~/.ssh/id_rsa
+#      
+#      ssh -i ~/.ssh/id_rsa root@207.244.247.46
+#      sudo systemctl restart aicbank
+#    displayName: 'Reiniciar o Serviço'

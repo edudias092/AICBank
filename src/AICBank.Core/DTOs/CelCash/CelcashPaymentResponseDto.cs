@@ -13,7 +13,7 @@ public class CelcashPaymentResponseDto
 
 public class PaymentResponseDto
 {
-    public int GalaxPayId { get; set; }
+    public string GalaxPayId { get; set; }
     public string Key { get; set; }
     public int Value { get; set; }
     public string Desc { get; set; }
