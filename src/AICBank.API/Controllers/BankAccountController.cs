@@ -1,6 +1,7 @@
 using AICBank.Core.DTOs;
 using AICBank.Core.DTOs.CelCash;
 using AICBank.Core.Interfaces;
+using AICBank.Core.Util;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -29,7 +30,7 @@ public class BankAccountController : ControllerBase
 
             if(result == null || !result.Success)
             {
-                return NotFound();
+                return NotFound(result);
             }
 
             return Ok(result);
@@ -38,13 +39,14 @@ public class BankAccountController : ControllerBase
         {
             _logger.LogError(ex.Message);
 
-            return BadRequest(ex.Message);
+            return BadRequest(ErrorMapper.CreateErrorResponse(ex.Message));
         }
         catch(Exception ex)
         {
             _logger.LogCritical(ex, "Erro inesperado");
-
-            return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro inesperado");
+            
+            return StatusCode(StatusCodes.Status500InternalServerError, 
+                ErrorMapper.CreateErrorResponse("Ocorreu um erro inesperado."));
         }
     }
 
@@ -57,7 +59,7 @@ public class BankAccountController : ControllerBase
 
             if(!result.Success)
             {
-                return BadRequest(result.Errors);
+                return BadRequest(ErrorMapper.CreateErrorResponse(result.Errors));
             }
 
             return Created("", new { id = result.Data?.Id});
@@ -66,13 +68,14 @@ public class BankAccountController : ControllerBase
         {
             _logger.LogError(ex.Message);
             
-            return BadRequest(ex.Message);
+            return BadRequest(ErrorMapper.CreateErrorResponse(ex.Message));
         }
         catch(Exception ex)
         {
             _logger.LogCritical(ex, "Erro inesperado");
 
-            return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro inesperado");
+            return StatusCode(StatusCodes.Status500InternalServerError, 
+                ErrorMapper.CreateErrorResponse("Ocorreu um erro inesperado"));
         }
     }
 
@@ -85,7 +88,7 @@ public class BankAccountController : ControllerBase
 
             if (!result.Success)
             {
-                return BadRequest(result.Errors);
+                return BadRequest(ErrorMapper.CreateErrorResponse(result.Errors));
             }
 
             return Ok(result);
@@ -100,7 +103,8 @@ public class BankAccountController : ControllerBase
         {
             _logger.LogCritical(ex, "Erro inesperado");
 
-            return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro inesperado");
+            return StatusCode(StatusCodes.Status500InternalServerError, 
+                ErrorMapper.CreateErrorResponse("Ocorreu um erro inesperado"));
         }
     }
 
@@ -113,7 +117,7 @@ public class BankAccountController : ControllerBase
 
             if (!result.Success)
             {
-                return BadRequest(result.Errors);
+                return BadRequest(ErrorMapper.CreateErrorResponse(result.Errors));
             }
 
             return Ok(result);
@@ -122,13 +126,14 @@ public class BankAccountController : ControllerBase
         {
             _logger.LogError(ex.Message);
 
-            return BadRequest(ex.Message);
+            return BadRequest(ErrorMapper.CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
             _logger.LogCritical(ex, "Erro inesperado");
 
-            return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro inesperado");
+            return StatusCode(StatusCodes.Status500InternalServerError, 
+                ErrorMapper.CreateErrorResponse("Ocorreu um erro inesperado"));
         }
     }
 
@@ -141,7 +146,7 @@ public class BankAccountController : ControllerBase
 
             if(result == null || !result.Success)
             {
-                return NotFound();
+                return NotFound(result);
             }
 
             return Ok(result);
@@ -150,13 +155,14 @@ public class BankAccountController : ControllerBase
         {
             _logger.LogError(ex.Message);
 
-            return BadRequest(ex.Message);
+            return BadRequest(ErrorMapper.CreateErrorResponse(ex.Message));
         }
         catch(Exception ex)
         {
             _logger.LogCritical(ex, "Erro inesperado");
 
-            return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro inesperado");
+            return StatusCode(StatusCodes.Status500InternalServerError, 
+                ErrorMapper.CreateErrorResponse("Ocorreu um erro inesperado"));
         }
     }
 
@@ -169,7 +175,7 @@ public class BankAccountController : ControllerBase
 
             if(result == null || !result.Success)
             {
-                return NotFound();
+                return NotFound(result);
             }
 
             return Ok(result);
@@ -178,13 +184,14 @@ public class BankAccountController : ControllerBase
         {
             _logger.LogError(ex.Message);
 
-            return BadRequest(ex.Message);
+            return BadRequest(ErrorMapper.CreateErrorResponse(ex.Message));
         }
         catch(Exception ex)
         {
             _logger.LogCritical(ex, "Erro inesperado");
-            
-            return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro inesperado");
+
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                ErrorMapper.CreateErrorResponse("Ocorreu um erro inesperado"));
         }
     }
 
@@ -207,19 +214,14 @@ public class BankAccountController : ControllerBase
         {
             _logger.LogError(ex.Message);
 
-            return BadRequest(new ResponseDTO<ChargeDTO>
-            {
-                Errors= [ex.Message]
-            });
+            return BadRequest(ErrorMapper.CreateErrorResponse(ex.Message));
         }
         catch(Exception ex)
         {
             _logger.LogCritical(ex, "Erro inesperado");
 
-            return StatusCode(StatusCodes.Status500InternalServerError, new ResponseDTO<ChargeDTO>
-            {
-                Errors= ["Ocorreu um erro inesperado."]
-            });
+            return StatusCode(StatusCodes.Status500InternalServerError, 
+                ErrorMapper.CreateErrorResponse("Ocorreu um erro inesperado"));
         }
     }
 
@@ -232,7 +234,7 @@ public class BankAccountController : ControllerBase
 
             if(result == null || !result.Success)
             {
-                return NotFound(string.Join(",", result.Errors));
+                return NotFound(result);
             }
 
             return Ok(result);
@@ -241,13 +243,14 @@ public class BankAccountController : ControllerBase
         {
             _logger.LogError(ex.Message);
 
-            return BadRequest(ex.Message);
+            return BadRequest(ErrorMapper.CreateErrorResponse(ex.Message));
         }
         catch(Exception ex)
         {
             _logger.LogCritical(ex, "Erro inesperado");
             
-            return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro inesperado");
+            return StatusCode(StatusCodes.Status500InternalServerError, 
+                ErrorMapper.CreateErrorResponse("Ocorreu um erro inesperado"));
         }
     }
 
@@ -260,7 +263,7 @@ public class BankAccountController : ControllerBase
 
             if(result == null || !result.Success)
             {
-                return NotFound(string.Join(",", result.Errors));
+                return NotFound(result);
             }
 
             return Ok(result);
@@ -269,13 +272,14 @@ public class BankAccountController : ControllerBase
         {
             _logger.LogError(ex.Message);
 
-            return BadRequest(ex.Message);
+            return BadRequest(ErrorMapper.CreateErrorResponse(ex.Message));
         }
         catch(Exception ex)
         {
             _logger.LogCritical(ex, "Erro inesperado");
             
-            return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro inesperado");
+            return StatusCode(StatusCodes.Status500InternalServerError, 
+                ErrorMapper.CreateErrorResponse("Ocorreu um erro inesperado"));
         }
     }
     
@@ -288,7 +292,7 @@ public class BankAccountController : ControllerBase
 
             if(result is not { Success: true })
             {
-                return NotFound(string.Join(",", result.Errors));
+                return NotFound(result);
             }
 
             return Ok(result);
@@ -303,7 +307,8 @@ public class BankAccountController : ControllerBase
         {
             _logger.LogCritical(ex, "Erro inesperado");
             
-            return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro inesperado");
+            return StatusCode(StatusCodes.Status500InternalServerError, 
+                ErrorMapper.CreateErrorResponse("Ocorreu um erro inesperado"));
         }
     }
 
@@ -316,7 +321,7 @@ public class BankAccountController : ControllerBase
 
             if(result is not { Success: true })
             {
-                return NotFound(string.Join(",", result.Errors));
+                return NotFound(result);
             }
 
             return Ok(result);
@@ -325,13 +330,14 @@ public class BankAccountController : ControllerBase
         {
             _logger.LogError(ex.Message);
 
-            return BadRequest(ex.Message);
+            return BadRequest(ErrorMapper.CreateErrorResponse(ex.Message));
         }
         catch(Exception ex)
         {
             _logger.LogCritical(ex, "Erro inesperado");
             
-            return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro inesperado");
+            return StatusCode(StatusCodes.Status500InternalServerError, 
+                ErrorMapper.CreateErrorResponse("Ocorreu um erro inesperado"));
         }
     }
     
@@ -354,19 +360,14 @@ public class BankAccountController : ControllerBase
         {
             _logger.LogError(ex.Message);
 
-            return BadRequest(new ResponseDTO<ChargeDTO>
-            {
-                Errors= [ex.Message]
-            });
+            return BadRequest(ErrorMapper.CreateErrorResponse(ex.Message));
         }
         catch(Exception ex)
         {
             _logger.LogCritical(ex, "Erro inesperado");
 
-            return StatusCode(StatusCodes.Status500InternalServerError, new ResponseDTO<ChargeDTO>
-            {
-                Errors= ["Ocorreu um erro inesperado."]
-            });
+            return StatusCode(StatusCodes.Status500InternalServerError, 
+                ErrorMapper.CreateErrorResponse("Ocorreu um erro inesperado"));
         }
     }
     
@@ -379,7 +380,7 @@ public class BankAccountController : ControllerBase
 
             if(result is not { Success: true })
             {
-                return NotFound(string.Join(",", result.Errors));
+                return NotFound(result);
             }
 
             return Ok(result);
@@ -388,13 +389,14 @@ public class BankAccountController : ControllerBase
         {
             _logger.LogError(ex.Message);
 
-            return BadRequest(ex.Message);
+            return BadRequest(ErrorMapper.CreateErrorResponse(ex.Message));
         }
         catch(Exception ex)
         {
             _logger.LogCritical(ex, "Erro inesperado");
             
-            return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro inesperado");
+            return StatusCode(StatusCodes.Status500InternalServerError, 
+                ErrorMapper.CreateErrorResponse("Ocorreu um erro inesperado"));
         }
     }
     
@@ -407,7 +409,7 @@ public class BankAccountController : ControllerBase
 
             if(result is not { Success: true })
             {
-                return NotFound(string.Join(",", result.Errors));
+                return NotFound(result);
             }
 
             return Ok(result);
@@ -416,13 +418,14 @@ public class BankAccountController : ControllerBase
         {
             _logger.LogError(ex.Message);
 
-            return BadRequest(ex.Message);
+            return BadRequest(ErrorMapper.CreateErrorResponse(ex.Message));
         }
         catch(Exception ex)
         {
             _logger.LogCritical(ex, "Erro inesperado");
             
-            return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro inesperado");
+            return StatusCode(StatusCodes.Status500InternalServerError, 
+                ErrorMapper.CreateErrorResponse("Ocorreu um erro inesperado"));
         }
     }
 }

@@ -252,7 +252,8 @@ public class CelCashClientService : ICelCashClientService
             .AddAuthorization("Bearer", token)
             .Build();
 
-        return await _httpRequestSender.SendAsync<CelcashBalanceResponseDto>(request);
+        return await _httpRequestSender.SendAsync(request,
+            errorHandler: content => JsonSerializer.Deserialize<CelcashBalanceResponseDto>(content, _jsonSerializerOptions));
     }
 
     public async Task<CelcashPaymentResponseDto> MakePayment(BankAccountDTO bankAccountDto, CelcashPaymentRequestDto paymentRequest)
@@ -265,7 +266,8 @@ public class CelCashClientService : ICelCashClientService
             .AddContent(requestBody)
             .Build();
 
-        return await _httpRequestSender.SendAsync<CelcashPaymentResponseDto>(request);
+        return await _httpRequestSender.SendAsync(request, 
+            errorHandler: (content) => JsonSerializer.Deserialize<CelcashPaymentResponseDto>(content, _jsonSerializerOptions));
     }
 
     public async Task<CelcashListSubaccountResponseDto> GetSubaccountList(
@@ -288,7 +290,8 @@ public class CelCashClientService : ICelCashClientService
         var parameters = new Dictionary<string, string>
         {
             { "startAt", "0" },
-            { "limit", "200" }
+            { "limit", "200" },
+            { "order", "createdAt.desc"}
         };
 
         if (filterSubaccountDto != null && filterSubaccountDto.Documents?.Length > 0)

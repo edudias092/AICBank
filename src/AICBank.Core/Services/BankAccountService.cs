@@ -12,21 +12,32 @@ using static AICBank.Core.DTOs.MandatoryDocumentsDTO;
 
 namespace AICBank.Core.Services;
 
-public class BankAccountService(
-    IBankAccountRepository bankAccountRepository,
-    IMapper mapper,
-    IHttpContextAccessor contextAccessor,
-    ICelCashClientService celCashClientService,
-    IEmailService emailService)
-    : IBankAccountService
+public class BankAccountService : IBankAccountService
 {
-    private readonly HttpContext _httpContext = contextAccessor.HttpContext ?? throw new ApplicationException("Couldn't get the httpContext.");
+    private readonly HttpContext _httpContext;
+    private readonly IBankAccountRepository _bankAccountRepository;
+    private readonly IMapper _mapper;
+    private readonly ICelCashClientService _celCashClientService;
+    private readonly IEmailService _emailService;
+
+    public BankAccountService(IBankAccountRepository bankAccountRepository,
+        IMapper mapper,
+        IHttpContextAccessor contextAccessor,
+        ICelCashClientService celCashClientService,
+        IEmailService emailService)
+    {
+        _bankAccountRepository = bankAccountRepository;
+        _mapper = mapper;
+        _celCashClientService = celCashClientService;
+        _emailService = emailService;
+        _httpContext = contextAccessor.HttpContext ?? throw new ApplicationException("Couldn't get the httpContext.");
+    }
 
     public async Task<ResponseDTO<BankAccountDTO>> CreateBankAccount(BankAccountDTO bankAccountDto)
     {
         var userId = _httpContext.GetAccountUserId();
-
-        var existingBankAccounts = await bankAccountRepository.Get(x => x.AccountUserId.ToString() == userId);
+        var existingBankAccounts = await _bankAccountRepository
+            .Get(x => x.AccountUserId.ToString() == userId);
 
         if (existingBankAccounts.Any())
         {
@@ -38,27 +49,23 @@ public class BankAccountService(
         
         //Todo: remove this when consolidating
         var cutLength = bankAccountDto.Name?.Length > 17 ? 17 : bankAccountDto.Name!.Length; 
-        bankAccountDto.SoftDescriptor = bankAccountDto.Name.Substring(0, cutLength).RemoverAcentos();
+        bankAccountDto.SoftDescriptor = bankAccountDto.Name
+            .Substring(0, cutLength)
+            .Sanitize();
 
-        var bankAccount = mapper.Map<BankAccount>(bankAccountDto);
+        var bankAccount = _mapper.Map<BankAccount>(bankAccountDto);
         
-        await bankAccountRepository.Add(bankAccount);
-        
+        await _bankAccountRepository.Add(bankAccount);
         var responseDto = await SendToCelCash(bankAccountDto);
-        if (!responseDto.Success)
-        {
-            return responseDto;
-        }
 
         bankAccount.GalaxHash = responseDto.Data.GalaxHash;
         bankAccount.GalaxId = responseDto.Data.GalaxId;
         bankAccount.Status = StatusBankAccount.PendingDocuments;
         
-        await bankAccountRepository.Update(bankAccount);
-        
-        bankAccountDto = mapper.Map<BankAccountDTO>(bankAccount);
+        await _bankAccountRepository.Update(bankAccount);
+        bankAccountDto = _mapper.Map<BankAccountDTO>(bankAccount);
 
-        await emailService.SendEmailAsync(new BankAccountSavedMessageBuilder(bankAccountDto));
+        await _emailService.SendEmailAsync(new BankAccountSavedMessageBuilder(bankAccountDto));
         
         return new ResponseDTO<BankAccountDTO>
         {
@@ -70,7 +77,7 @@ public class BankAccountService(
     public async Task<ResponseDTO<BankAccountDTO>> GetBankAccountById(int id)
     {
         var bankAccount = await GetBankAccount(id);
-        var bankAccountDto = mapper.Map<BankAccountDTO>(bankAccount);
+        var bankAccountDto = _mapper.Map<BankAccountDTO>(bankAccount);
         
         return new ResponseDTO<BankAccountDTO>
         {
@@ -84,23 +91,19 @@ public class BankAccountService(
     {
         //Todo: remove this when consolidating
         var cutLength = bankAccountDto.Name?.Length > 17 ? 17 : bankAccountDto.Name!.Length; 
-        bankAccountDto.SoftDescriptor = bankAccountDto.Name[..cutLength].RemoverAcentos();
+        bankAccountDto.SoftDescriptor = bankAccountDto.Name[..cutLength].Sanitize();
 
-        var bankAccount = mapper.Map<BankAccount>(bankAccountDto);
+        var bankAccount = _mapper.Map<BankAccount>(bankAccountDto);
 
         if (string.IsNullOrWhiteSpace(bankAccountDto.GalaxId))
         {
             var responseDto = await SendToCelCash(bankAccountDto);
-            if (!responseDto.Success)
-            {
-                return responseDto;
-            }
 
             responseDto.Data.Status = StatusBankAccount.PendingDocuments;
-            bankAccount = mapper.Map<BankAccount>(responseDto.Data);
+            bankAccount = _mapper.Map<BankAccount>(responseDto.Data);
         }
 
-        await bankAccountRepository.Update(bankAccount);
+        await _bankAccountRepository.Update(bankAccount);
 
         return new ResponseDTO<BankAccountDTO>
         {
@@ -109,47 +112,14 @@ public class BankAccountService(
         };
     }
 
-    public async Task<ResponseDTO<BankAccountDTO>> IntegrateBankAccount(int id)
-    {
-        var bankAccount = await bankAccountRepository.GetBankAccountWithInfoByIdAsync(id);
-
-        if (bankAccount == null)
-        {
-            throw new InvalidOperationException("Conta não encontrada.");
-        }
-
-        if (bankAccount.AccountUserId.ToString() != _httpContext.GetAccountUserId())
-        {
-            throw new InvalidOperationException("Conta não pertence ao usuário.");
-        }
-
-        if (!string.IsNullOrWhiteSpace(bankAccount.GalaxHash))
-        {
-            throw new InvalidOperationException("Conta já existe no serviço");
-        }
-        var bankAccountDto = mapper.Map<BankAccountDTO>(bankAccount);
-
-        var response = await SendToCelCash(bankAccountDto);
-
-        if (!response.Success) return response;
-        
-        bankAccount = mapper.Map<BankAccount>(response.Data);
-        await bankAccountRepository.Update(bankAccount);
-
-        return response;
-    }
-
     private async Task<ResponseDTO<BankAccountDTO>> SendToCelCash(BankAccountDTO bankAccountDto)
     {
-        var result = await celCashClientService.CreateSubBankAccount(bankAccountDto);
+        var result = await _celCashClientService.CreateSubBankAccount(bankAccountDto);
 
-        if (!result.Type || result.CelcashCompany == null)
-            return new ResponseDTO<BankAccountDTO>()
-            {
-                Success = false,
-                Data = null,
-                Errors = [ErrorMapper.MapErrors(result.Error)],
-            };
+        if (result?.CelcashCompany == null || result?.Type == false)
+        {
+            throw new InvalidOperationException(ErrorMapper.MapErrors(result!.Error));
+        }
         
         bankAccountDto.GalaxHash = result.CelcashCompany.ApiAuth.GalaxHash;
         bankAccountDto.GalaxId = result.CelcashCompany.ApiAuth.GalaxId.ToString();
@@ -164,7 +134,7 @@ public class BankAccountService(
     public async Task<ResponseDTO<BankAccountDTO>> SendMandatoryDocuments(int bankAccountId, MandatoryDocumentsDTO mandatoryDocumentsDto)
     {
         var existingBankAccount = await GetBankAccount(bankAccountId);
-        var bankAccountDto = mapper.Map<BankAccountDTO>(existingBankAccount);
+        var bankAccountDto = _mapper.Map<BankAccountDTO>(existingBankAccount);
 
         var celcashSendMandatoryDocumentsDto =
             CelcashSendMandatoryDocumentsDTO.FromMandatoryDocumentsDto(mandatoryDocumentsDto);
@@ -200,20 +170,15 @@ public class BankAccountService(
         celcashSendMandatoryDocumentsDto.Documents.Company.ElectionRecord = await ConvertToBase64(mandatoryDocumentsDto.ElectionRecord, false);
         celcashSendMandatoryDocumentsDto.Documents.Company.Statute = await ConvertToBase64(mandatoryDocumentsDto.Statute, false);
         
-        var result = await celCashClientService.SendMandatoryDocuments(celcashSendMandatoryDocumentsDto, bankAccountDto);
+        var result = await _celCashClientService.SendMandatoryDocuments(celcashSendMandatoryDocumentsDto, bankAccountDto);
 
         if (result == null || !result.Type)
-            return new ResponseDTO<BankAccountDTO>
-            {
-                Success = false,
-                Errors = [ErrorMapper.MapErrors(result?.Error)],
-                Data = bankAccountDto
-            };
+            throw new InvalidOperationException(ErrorMapper.MapErrors(result?.Error));
         
         existingBankAccount.Status = StatusBankAccount.PendingAnalysis;
-        await bankAccountRepository.Update(existingBankAccount);
+        await _bankAccountRepository.Update(existingBankAccount);
 
-        bankAccountDto = mapper.Map<BankAccountDTO>(existingBankAccount);
+        bankAccountDto = _mapper.Map<BankAccountDTO>(existingBankAccount);
 
         return new ResponseDTO<BankAccountDTO>
         {
@@ -225,13 +190,13 @@ public class BankAccountService(
 
     public async Task<ResponseDTO<BankAccountDTO>> GetBankAccountByAccountUserId(int accountUserId)
     {
-        var bankAccount = await bankAccountRepository.GetByAccountUserWithInfoAsync(accountUserId);
+        var bankAccount = await _bankAccountRepository.GetByAccountUserWithInfoAsync(accountUserId);
 
         if (bankAccount == null)
             return new ResponseDTO<BankAccountDTO>
             {
                 Success = true,
-                Errors = [],
+                Errors = ["Conta não encontrada."],
                 Data = null
             };
         
@@ -240,7 +205,7 @@ public class BankAccountService(
             throw new InvalidOperationException("Conta não pertence ao usuário.");
         }
 
-        var bankAccountDto = mapper.Map<BankAccountDTO>(bankAccount);
+        var bankAccountDto = _mapper.Map<BankAccountDTO>(bankAccount);
         return new ResponseDTO<BankAccountDTO>
         {
             Success = true,
@@ -252,9 +217,9 @@ public class BankAccountService(
     public async Task<ResponseDTO<BankStatementDTO>> GetMovements(int bankAccountId, DateTime initialDate, DateTime finalDate)
     {
         var existingBankAccount = await GetBankAccount(bankAccountId);
-        var bankAccountDto = mapper.Map<BankAccountDTO>(existingBankAccount);
+        var bankAccountDto = _mapper.Map<BankAccountDTO>(existingBankAccount);
 
-        var bankStatementDto = await celCashClientService.Movements(bankAccountDto, initialDate, finalDate);
+        var bankStatementDto = await _celCashClientService.Movements(bankAccountDto, initialDate, finalDate);
 
         return new ResponseDTO<BankStatementDTO>{
             Data = bankStatementDto,
@@ -268,9 +233,9 @@ public class BankAccountService(
     public async Task<ResponseDTO<CelcashChargeDTO>> CreateCharge(int bankAccountId, ChargeDTO chargeDto)
     {
         var existingBankAccount = await GetBankAccount(bankAccountId);
-        var bankAccountDto = mapper.Map<BankAccountDTO>(existingBankAccount);
+        var bankAccountDto = _mapper.Map<BankAccountDTO>(existingBankAccount);
 
-        var chargeResponseDto = await celCashClientService.CreateCharge(bankAccountDto, chargeDto);
+        var chargeResponseDto = await _celCashClientService.CreateCharge(bankAccountDto, chargeDto);
 
         return new ResponseDTO<CelcashChargeDTO>{
             Data = chargeResponseDto.Charge,
@@ -284,9 +249,9 @@ public class BankAccountService(
     public async Task<ResponseDTO<CelcashChargeDTO[]>> GetCharges(int bankAccountId, DateTime? initialDate, DateTime? finalDate)
     {
         var existingBankAccount = await GetBankAccount(bankAccountId);
-        var bankAccountDto = mapper.Map<BankAccountDTO>(existingBankAccount);
+        var bankAccountDto = _mapper.Map<BankAccountDTO>(existingBankAccount);
 
-        var chargeListDto = await celCashClientService.GetCharges(bankAccountDto, initialDate, finalDate);
+        var chargeListDto = await _celCashClientService.GetCharges(bankAccountDto, initialDate, finalDate);
 
         return new ResponseDTO<CelcashChargeDTO[]>{
             Data = chargeListDto?.Charges,
@@ -298,9 +263,9 @@ public class BankAccountService(
     public async Task<ResponseDTO<CelcashChargeDTO>> GetChargeById(int bankAccountId, string chargeId)
     {
         var existingBankAccount = await GetBankAccount(bankAccountId);
-        var bankAccountDto = mapper.Map<BankAccountDTO>(existingBankAccount);
+        var bankAccountDto = _mapper.Map<BankAccountDTO>(existingBankAccount);
 
-        var chargeListDto = await celCashClientService.GetChargeById(bankAccountDto, chargeId);
+        var chargeListDto = await _celCashClientService.GetChargeById(bankAccountDto, chargeId);
         
         return new ResponseDTO<CelcashChargeDTO>{
             Data = chargeListDto?.Charges?.FirstOrDefault(),
@@ -312,9 +277,9 @@ public class BankAccountService(
     public async Task<ResponseDTO<bool>> CancelCharge(int bankAccountId, string chargeId)
     {
         var existingBankAccount = await GetBankAccount(bankAccountId);
-        var bankAccountDto = mapper.Map<BankAccountDTO>(existingBankAccount);
+        var bankAccountDto = _mapper.Map<BankAccountDTO>(existingBankAccount);
         
-        var result = await celCashClientService.CancelCharge(bankAccountDto, chargeId);
+        var result = await _celCashClientService.CancelCharge(bankAccountDto, chargeId);
         
         return new ResponseDTO<bool>{
             Data = result,
@@ -326,10 +291,13 @@ public class BankAccountService(
     public async Task<ResponseDTO<CelcashBalanceResponseDto>> GetBalance(int bankAccountId)
     {
         var existingBankAccount = await GetBankAccount(bankAccountId);
-        var bankAccountDto = mapper.Map<BankAccountDTO>(existingBankAccount);
+        var bankAccountDto = _mapper.Map<BankAccountDTO>(existingBankAccount);
 
-        var result = await celCashClientService.GetBalance(bankAccountDto);
-
+        var result = await _celCashClientService.GetBalance(bankAccountDto);
+        
+        if(result == null)
+            throw new InvalidOperationException("Erro ao obter saldo. Por favor entre em contato com o suporte");
+        
         return new ResponseDTO<CelcashBalanceResponseDto>
         {
             Data = result,
@@ -341,10 +309,13 @@ public class BankAccountService(
     public async Task<ResponseDTO<CelcashPaymentResponseDto>> MakePayment(int bankAccountId, CelcashPaymentRequestDto paymentRequest)
     {
         var existingBankAccount = await GetBankAccount(bankAccountId);
-        var bankAccountDto = mapper.Map<BankAccountDTO>(existingBankAccount);
+        var bankAccountDto = _mapper.Map<BankAccountDTO>(existingBankAccount);
         
-        var result = await celCashClientService.MakePayment(bankAccountDto, paymentRequest);
+        var result = await _celCashClientService.MakePayment(bankAccountDto, paymentRequest);
 
+        if(result == null)
+            throw new InvalidOperationException("Erro ao fazer transferência/pix. Por favor entre em contato com o suporte");
+        
         return new ResponseDTO<CelcashPaymentResponseDto>
         {
             Data = result,
@@ -356,11 +327,11 @@ public class BankAccountService(
     public async Task<ResponseDTO<Dictionary<string, decimal>>> GetChargesSumByDate(int bankAccountId)
     {
         var existingBankAccount = await GetBankAccount(bankAccountId);
-        var bankAccountDto = mapper.Map<BankAccountDTO>(existingBankAccount);
+        var bankAccountDto = _mapper.Map<BankAccountDTO>(existingBankAccount);
 
         var startDate = DateTime.Today.AddDays(-7);
         var endDate = DateTime.Today.AddDays(7);
-        var result = await celCashClientService.GetCharges(bankAccountDto, startDate, endDate);
+        var result = await _celCashClientService.GetCharges(bankAccountDto, startDate, endDate);
         
         var chargeSumByDate = new Dictionary<string, decimal>();
         var countOfDays = (endDate - startDate).Days;
@@ -385,11 +356,11 @@ public class BankAccountService(
     public async Task<ResponseDTO<Dictionary<string, decimal>>> GetChargesSumWeekly(int bankAccountId)
     {
         var existingBankAccount = await GetBankAccount(bankAccountId);
-        var bankAccountDto = mapper.Map<BankAccountDTO>(existingBankAccount);
+        var bankAccountDto = _mapper.Map<BankAccountDTO>(existingBankAccount);
 
         var startDate = DateTime.Today.AddDays(-7);
         var endDate = DateTime.Today;
-        var result = await celCashClientService.GetCharges(bankAccountDto, startDate, endDate);
+        var result = await _celCashClientService.GetCharges(bankAccountDto, startDate, endDate);
         
         var chargeSumByDate = new Dictionary<string, decimal>();
         var countOfDays = (endDate - startDate).Days;
@@ -413,7 +384,7 @@ public class BankAccountService(
     
     private async Task<BankAccount> GetBankAccount(int bankAccountId)
     {
-        var existingBankAccount = await bankAccountRepository.GetBankAccountWithInfoByIdAsync(bankAccountId);
+        var existingBankAccount = await _bankAccountRepository.GetBankAccountWithInfoByIdAsync(bankAccountId);
 
         if (existingBankAccount == null
             || existingBankAccount.AccountUserId.ToString() != _httpContext.GetAccountUserId())

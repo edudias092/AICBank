@@ -1,5 +1,7 @@
 using System;
+using System.Collections.ObjectModel;
 using System.Text;
+using AICBank.Core.DTOs;
 using AICBank.Core.DTOs.CelCash;
 
 namespace AICBank.Core.Util;
@@ -24,5 +26,21 @@ public class ErrorMapper
         }
 
         return null;
+    }
+
+    public static ResponseDTO<object> CreateErrorResponse(params string[] messages)
+    {
+        var errors = new Collection<string>{};
+
+        foreach (var msg in messages)
+        {
+            errors.Add(msg);
+        }
+
+        return new ResponseDTO<object>
+        {
+            Success = false,
+            Errors = errors.ToArray()
+        };
     }
 }

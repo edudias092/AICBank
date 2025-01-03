@@ -16,6 +16,5 @@ public interface ICelCashClientService
     Task<bool> CancelCharge(BankAccountDTO bankAccountDto, string chargeId);
     Task<CelcashBalanceResponseDto> GetBalance(BankAccountDTO bankAccountDto);
     Task<CelcashPaymentResponseDto> MakePayment(BankAccountDTO bankAccountDto, CelcashPaymentRequestDto paymentRequest);
-
     Task<CelcashListSubaccountResponseDto> GetSubaccountList(CelcashFilterSubaccountDto filterSubaccountDto);
 }
