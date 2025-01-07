@@ -18,12 +18,10 @@ public class ChargeDTO
     public double Value { get; set; }
 
     [JsonPropertyName("value")]
-    public int ValueInCents {get {
-        return Convert.ToInt32(Value * 100);
-    }}
+    public int ValueInCents => Convert.ToInt32(Value * 100);
 
     public DateTime Paydate { get; set; }
-    public string Payday { get => $"{Paydate:yyyy-MM-dd}" ; }
+    public string Payday => $"{Paydate:yyyy-MM-dd}";
 
     public string MainPaymentMethodId { get; set; }
 
@@ -39,11 +37,61 @@ public class ChargeDTO
     [JsonPropertyName("Transactions")]
     public List<TransactionDTO> Transactions { get; set; }
 
+    [JsonPropertyName("PaymentMethodBoleto")]
+    public PaymentMethodBoleto PaymentMethodBoleto { get; set; }
+    
+    [JsonPropertyName("Split")] 
+    public Split Split { get; set; }
 }
 
 public class PaymentMethods {
     public const string CreditCard = "creditcard";
     public const string Boleto = "boleto";
     public const string Pix = "pix";
+}
 
+public class PaymentMethodBoleto
+{
+    public int? Fine { get; set; }
+    public int? Interest { get; set; }
+    public string Instructions { get; set; }
+    public int? DeadlineDays { get; set; }
+}
+
+public class Split
+{
+    public SplitDetails All { get; set; }
+}
+
+public class SplitDetails
+{
+    private string _type;
+    public string Type
+    {
+        get => _type;
+        set
+        {
+            if (value != SplitType.Fixed && value != SplitType.Percent)
+            {
+                throw new ArgumentException("Split type must be either Fixed, or Percent.");
+            }
+            
+            _type = value;
+        }
+    }
+
+    [JsonPropertyName("Companies")]
+    public SplitCompany[] Companies { get; set; }
+}
+
+public class SplitType
+{
+    public const string Percent = "percent";
+    public const string Fixed = "fixed";
+}
+
+public class SplitCompany
+{
+    public int GalaxId { get; set; }
+    public int Value { get; set; }
 }

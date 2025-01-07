@@ -9,6 +9,8 @@ public class CelcashPaymentResponseDto
     
     [JsonPropertyName("Payment")]
     public PaymentResponseDto Payment { get; set; }
+    
+    public ErrorDetails Error { get; set; }
 }
 
 public class PaymentResponseDto

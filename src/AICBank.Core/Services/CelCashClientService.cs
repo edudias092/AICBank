@@ -1,5 +1,3 @@
-using System;
-using System.Data.Common;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Reflection;
@@ -7,7 +5,6 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
-using System.Text.Json.Serialization.Metadata;
 using System.Web;
 using AICBank.Core.DTOs;
 using AICBank.Core.DTOs.CelCash;
@@ -29,22 +26,23 @@ public class CelCashClientService : ICelCashClientService
     private readonly HttpRequestSender _httpRequestSender;
     private readonly IMemoryCache _cache;
 
-    private string TokenFormat = "{0}-{1}";
+    private string _tokenFormat = "{0}-{1}";
     
     public CelCashClientService(IConfiguration config, 
                                 IHttpClientFactory httpClientFactory, 
                                 ILogger<CelCashClientService> logger,
                                 ILogger<HttpRequestSender> loggerSender,
-                                IMemoryCache cache)
+                                IMemoryCache cache,
+                                IIntegrationLogRepository integrationLogRepository)
     {
         _httpClient = httpClientFactory.CreateClient("CelCashHttpClient");
         _httpClient.DefaultRequestHeaders.UserAgent.Add(
-            new ProductInfoHeaderValue("AicBank", Assembly.GetExecutingAssembly().GetName().Version.ToString())
+            new ProductInfoHeaderValue("AicBank", Assembly.GetExecutingAssembly().GetName().Version!.ToString())
         );
         
         _logger = logger;
 
-        string baseCelCashUrl = config.GetSection("CelCash").GetValue<string>("baseUrl");
+        var baseCelCashUrl = config.GetSection("CelCash").GetValue<string>("baseUrl");
         _httpClient.BaseAddress = new Uri(baseCelCashUrl);
 
         _mainGalaxId = config.GetSection("CelCash").GetValue<string>("galaxId") 
@@ -59,7 +57,7 @@ public class CelCashClientService : ICelCashClientService
             WriteIndented = true
         };
 
-        _httpRequestSender = new HttpRequestSender(_httpClient, _jsonSerializerOptions, loggerSender);
+        _httpRequestSender = new HttpRequestSender(_httpClient, _jsonSerializerOptions, loggerSender, integrationLogRepository);
         
         _cache = cache;
     }
@@ -73,7 +71,7 @@ public class CelCashClientService : ICelCashClientService
     
     private async Task<string> CreateAuthToken(string galaxId, string galaxHash, string[] permissions)
     {
-        var tokenInCache = _cache.Get(string.Format(TokenFormat, galaxId, string.Join("|", permissions)));
+        var tokenInCache = _cache.Get(string.Format(_tokenFormat, galaxId, string.Join("|", permissions)));
 
         if (tokenInCache != null)
             return tokenInCache.ToString();
@@ -97,7 +95,7 @@ public class CelCashClientService : ICelCashClientService
             var convertedReponse = JsonSerializer.Deserialize<CelcashTokenResponseDTO>(
                                                     contentString, _jsonSerializerOptions);
 
-            var cacheKey = string.Format(TokenFormat, galaxId, string.Join("|", permissions));
+            var cacheKey = string.Format(_tokenFormat, galaxId, string.Join("|", permissions));
             _cache.Set(cacheKey, convertedReponse.AccessToken,
                 TimeSpan.FromSeconds(convertedReponse.ExpiresIn));
             
@@ -141,12 +139,12 @@ public class CelCashClientService : ICelCashClientService
             .AddContent(JsonContent.Create(sendMandatoryDocumentsDto, null, _jsonSerializerOptions))
             .Build();
 
-        return await _httpRequestSender.SendAsync<CelcashCreatedSubaccountResponseDTO>(request,
+        return await _httpRequestSender.SendAsync(request,
             null,
             (content) => JsonSerializer.Deserialize<CelcashCreatedSubaccountResponseDTO>(content, _jsonSerializerOptions));
     }
 
-    public async Task<BankStatementDTO> Movements(BankAccountDTO bankAccountDto, DateTime initialDate, DateTime finalDate)
+    public async Task<BankStatementDTO> GetMovements(BankAccountDTO bankAccountDto, DateTime initialDate, DateTime finalDate)
     {
         var token = await CreateAuthToken(bankAccountDto.GalaxId, bankAccountDto.GalaxHash, ["balance.read"]);
 
@@ -252,7 +250,8 @@ public class CelCashClientService : ICelCashClientService
             .AddAuthorization("Bearer", token)
             .Build();
 
-        return await _httpRequestSender.SendAsync<CelcashBalanceResponseDto>(request);
+        return await _httpRequestSender.SendAsync(request,
+            errorHandler: content => JsonSerializer.Deserialize<CelcashBalanceResponseDto>(content, _jsonSerializerOptions));
     }
 
     public async Task<CelcashPaymentResponseDto> MakePayment(BankAccountDTO bankAccountDto, CelcashPaymentRequestDto paymentRequest)
@@ -265,7 +264,8 @@ public class CelCashClientService : ICelCashClientService
             .AddContent(requestBody)
             .Build();
 
-        return await _httpRequestSender.SendAsync<CelcashPaymentResponseDto>(request);
+        return await _httpRequestSender.SendAsync(request, 
+            errorHandler: (content) => JsonSerializer.Deserialize<CelcashPaymentResponseDto>(content, _jsonSerializerOptions));
     }
 
     public async Task<CelcashListSubaccountResponseDto> GetSubaccountList(
@@ -288,7 +288,8 @@ public class CelCashClientService : ICelCashClientService
         var parameters = new Dictionary<string, string>
         {
             { "startAt", "0" },
-            { "limit", "200" }
+            { "limit", "200" },
+            { "order", "createdAt.desc"}
         };
 
         if (filterSubaccountDto != null && filterSubaccountDto.Documents?.Length > 0)

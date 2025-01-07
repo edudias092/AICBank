@@ -91,10 +91,12 @@ public static class ServicesConfiguration
         servicesCollection.AddScoped<IAuthRepository, AuthRepository>();
         servicesCollection.AddScoped<IAccountUserRepository, AccountUserRepository>();
         servicesCollection.AddScoped<IBankAccountRepository, BankAccountRepository>();
+        servicesCollection.AddScoped<IIntegrationLogRepository, IntegrationLogRepository>();
         servicesCollection.AddScoped<IAuthService, AuthService>();
         servicesCollection.AddScoped<IBankAccountService, BankAccountService>();
         servicesCollection.AddScoped<ICelCashClientService, CelCashClientService>();
         servicesCollection.AddScoped<IEmailService, EmailService>();
         servicesCollection.AddScoped<IValidator<AccountUserDTO>, AccountUserDTOValidator>();
+        servicesCollection.AddScoped<ISplitFactory, SplitFactory>();
     }
 }

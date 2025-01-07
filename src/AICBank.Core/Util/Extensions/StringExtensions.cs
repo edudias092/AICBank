@@ -7,7 +7,7 @@ namespace AICBank.Core.Util.Extensions;
 public static class StringExtensions
 {
     
-    public static string RemoverAcentos(this string texto)
+    public static string Sanitize(this string texto)
     {
         if (string.IsNullOrEmpty(texto))
         {
