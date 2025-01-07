@@ -22,6 +22,7 @@ public class BankAccountServiceTests
     private IMapper _mapper;
     private IEmailService _emailService;
     private HttpContext _httpContext;
+    private ISplitFactory _splitFactory;
     
     public BankAccountServiceTests()
     {
@@ -32,6 +33,7 @@ public class BankAccountServiceTests
                 cfg.AddProfile<GlobalMappingProfile>())
             .CreateMapper();
         _emailService = A.Fake<IEmailService>();
+        _splitFactory = A.Fake<ISplitFactory>();
         
         _httpContextAccessor = new HttpContextAccessor()
         {
@@ -48,7 +50,8 @@ public class BankAccountServiceTests
             _mapper,
             _httpContextAccessor,
             _celCashClientService,
-            _emailService);
+            _emailService,
+            _splitFactory);
     }
 
     [Fact]
