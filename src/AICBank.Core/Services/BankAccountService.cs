@@ -19,18 +19,21 @@ public class BankAccountService : IBankAccountService
     private readonly IMapper _mapper;
     private readonly ICelCashClientService _celCashClientService;
     private readonly IEmailService _emailService;
+    private readonly ISplitFactory _splitFactory;
 
     public BankAccountService(IBankAccountRepository bankAccountRepository,
         IMapper mapper,
         IHttpContextAccessor contextAccessor,
         ICelCashClientService celCashClientService,
-        IEmailService emailService)
+        IEmailService emailService,
+        ISplitFactory splitFactory)
     {
         _bankAccountRepository = bankAccountRepository;
         _mapper = mapper;
         _celCashClientService = celCashClientService;
         _emailService = emailService;
         _httpContext = contextAccessor.HttpContext ?? throw new ApplicationException("Couldn't get the httpContext.");
+        _splitFactory = splitFactory;
     }
 
     public async Task<ResponseDTO<BankAccountDTO>> CreateBankAccount(BankAccountDTO bankAccountDto)
@@ -219,7 +222,7 @@ public class BankAccountService : IBankAccountService
         var existingBankAccount = await GetBankAccount(bankAccountId);
         var bankAccountDto = _mapper.Map<BankAccountDTO>(existingBankAccount);
 
-        var bankStatementDto = await _celCashClientService.Movements(bankAccountDto, initialDate, finalDate);
+        var bankStatementDto = await _celCashClientService.GetMovements(bankAccountDto, initialDate, finalDate);
 
         return new ResponseDTO<BankStatementDTO>{
             Data = bankStatementDto,
@@ -235,6 +238,7 @@ public class BankAccountService : IBankAccountService
         var existingBankAccount = await GetBankAccount(bankAccountId);
         var bankAccountDto = _mapper.Map<BankAccountDTO>(existingBankAccount);
 
+        chargeDto.Split = _splitFactory.CreateDefaultBoletoSplitPaymentMethod();
         var chargeResponseDto = await _celCashClientService.CreateCharge(bankAccountDto, chargeDto);
 
         return new ResponseDTO<CelcashChargeDTO>{

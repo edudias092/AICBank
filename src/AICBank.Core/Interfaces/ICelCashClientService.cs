@@ -9,7 +9,7 @@ public interface ICelCashClientService
 {
     Task<CelcashCreatedSubaccountResponseDTO> CreateSubBankAccount(BankAccountDTO bankAccountDto);
     Task<CelcashCreatedSubaccountResponseDTO> SendMandatoryDocuments(CelcashSendMandatoryDocumentsDTO sendMandatoryDocumentsDto, BankAccountDTO bankAccountDto);
-    Task<BankStatementDTO> Movements(BankAccountDTO bankAccountDto, DateTime initialDate, DateTime finalDate);
+    Task<BankStatementDTO> GetMovements(BankAccountDTO bankAccountDto, DateTime initialDate, DateTime finalDate);
     Task<CelcashChargeResponseDTO> CreateCharge(BankAccountDTO bankAccountDto, ChargeDTO chargeDto);
     Task<CelcashListChargeResponseDTO> GetCharges(BankAccountDTO bankAccountDto, DateTime? initialDate, DateTime? finalDate);
     Task<CelcashListChargeResponseDTO> GetChargeById(BankAccountDTO bankAccountDto, string chargeId);
