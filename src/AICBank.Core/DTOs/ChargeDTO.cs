@@ -92,6 +92,6 @@ public class SplitType
 
 public class SplitCompany
 {
-    public int GalaxId { get; set; }
+    public int GalaxPayId { get; set; }
     public int Value { get; set; }
 }

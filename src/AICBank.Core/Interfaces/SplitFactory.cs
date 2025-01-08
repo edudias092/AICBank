@@ -17,7 +17,7 @@ public class SplitFactory(IConfiguration configuration) : ISplitFactory
                 {
                     new SplitCompany
                     {
-                        GalaxId = mainGalaxId,
+                        GalaxPayId = mainGalaxId,
                         Value = 10000
                     }
                 }
