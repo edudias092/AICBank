@@ -12,13 +12,13 @@ public class SplitFactory(IConfiguration configuration) : ISplitFactory
         {
             All = new SplitDetails()
             {
-                Type = SplitType.Percent,
+                Type = SplitType.Fixed,
                 Companies = new[]
                 {
                     new SplitCompany
                     {
                         GalaxPayId = mainGalaxId,
-                        Value = 10000
+                        Value = 190
                     }
                 }
             }
