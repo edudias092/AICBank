@@ -8,4 +8,5 @@ public interface IBankAccountRepository : IRepository<BankAccount>
 {
     Task<BankAccount> GetBankAccountWithInfoByIdAsync(int id);
     Task<BankAccount> GetByAccountUserWithInfoAsync(int accountUserId);
+    Task<BankAccount> GetBankAccountWithInfoByGalaxIdAsync(string galaxId);
 }

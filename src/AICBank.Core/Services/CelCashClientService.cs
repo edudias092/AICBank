@@ -287,14 +287,19 @@ public class CelCashClientService : ICelCashClientService
         
         var parameters = new Dictionary<string, string>
         {
-            { "startAt", "0" },
-            { "limit", "200" },
-            { "order", "createdAt.desc"}
+            { "startAt", filterSubaccountDto?.StartAt.ToString() ?? "0" },
+            { "limit", filterSubaccountDto?.Limit.ToString() ?? "100" },
+            { "order", filterSubaccountDto?.Order ?? "createdAt.desc"}
         };
 
         if (filterSubaccountDto != null && filterSubaccountDto.Documents?.Length > 0)
         {
             parameters.Add("documents", string.Join(",", filterSubaccountDto.Documents));
+        }
+
+        if (filterSubaccountDto != null && filterSubaccountDto.Documents?.Length > 0)
+        {
+            parameters.Add("galaxPayIds", string.Join(",", filterSubaccountDto.GalaxPayIds));
         }
 
         var query = HttpUtility.ParseQueryString(uriBuilder.Query);

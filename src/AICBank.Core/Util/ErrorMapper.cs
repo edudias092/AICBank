@@ -16,8 +16,9 @@ public class ErrorMapper
 
             if(errorDetails.Details != null){
                 foreach(var detail in errorDetails.Details){
+                    var keyName = _fieldNames.ContainsKey(detail.Key)? _fieldNames[detail.Key]+": " : "";
                     foreach(var error in detail.Value){
-                        sb.AppendLine(error);
+                        sb.AppendFormat("\n{0}{1}", keyName.ToUpper(), error);
                     }
                 }
             }
@@ -43,4 +44,42 @@ public class ErrorMapper
             Errors = errors.ToArray()
         };
     }
+    
+    
+    private static Dictionary<string, string> _fieldNames = new Dictionary<string, string>
+    {
+        {"softDescriptor", "Nome para exibição na Fatura"},
+        {"internalName", "Profissão"},
+        {"inscription", "Inscrição do profissional"},
+        {"name", "Nome"},
+        {"document", "Documento"},
+        {"phone", "Telefone"},
+        {"emailContact", "E-mail"},
+        {"zipcode", "CEP"},
+        {"street", "Rua"},
+        {"number", "Número"},
+        {"complement", "Complemento"},
+        {"neighborhood", "Bairro"},
+        {"city", "Cidade"},
+        {"state", "Estado"},
+        {"nameDisplay", "Nome para Exibição"},
+        {"responsibleDocument", "Documento do Responsável"},
+        {"typeCompany", "Tipo de Empresa"},
+        {"cnae", "CNAE"},
+        {"motherName", "Nome da mãe"},
+        {"birthDate", "Data de nascimento"},
+        {"monthlyIncome", "Renda mensal"},
+        {"about", "Sobre o negócio"},
+        {"socialMediaLink", "Rede social"},
+        {"type", "Tipo de Associado"},
+        {"lastContract", "Contrato social"},
+        {"cnpjCard", "Documento CNPJ"},
+        {"electionRecord", "Ata de eleição da diretoria"},
+        {"statute", "Estatuto"},
+        {"selfie", "Selfie"},
+        {"picture", "Foto da CNH"},
+        {"front", "Foto da frente do RG"},
+        {"back", "Foto do verso do RG"},
+        {"address", "Comprovante de Endereço"}
+    };
 }

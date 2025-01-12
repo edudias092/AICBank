@@ -1,6 +1,7 @@
 using AICBank.Core.DTOs;
 using AICBank.Core.DTOs.CelCash;
 using AICBank.Core.Interfaces;
+using AICBank.Core.Util;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,12 +14,15 @@ namespace AICBank.API.Controllers;
 public class ConfigController : ControllerBase
 {
     private readonly ICelCashClientService _celCashClientService;
+    private readonly IBankAccountService _bankAccountService;
     private readonly ILogger<ConfigController> _logger;
 
-    public ConfigController(ICelCashClientService celCashClientService, ILogger<ConfigController> logger)
+    public ConfigController(ICelCashClientService celCashClientService, ILogger<ConfigController> logger, 
+        IBankAccountService bankAccountService)
     {
         _celCashClientService = celCashClientService;
         _logger = logger;
+        _bankAccountService = bankAccountService;
     }
 
     [Authorize(Roles = "Admin")]
@@ -52,6 +56,35 @@ public class ConfigController : ControllerBase
             _logger.LogCritical(ex, "Erro inesperado");
 
             return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro inesperado");
+        }
+    }
+    
+    [Authorize(Roles = "Admin")]
+    [HttpPatch("subaccounts/{galaxId}/status")]
+    public async Task<IActionResult> PatchStatus(string galaxId, [FromBody] bool approve)
+    {
+        try
+        {
+            var result = await _bankAccountService.CheckSubaccountStatus(galaxId, approve);
+            
+            return Ok(new ResponseDTO<bool>()
+            {
+                Success = result,
+                Data = result,
+                Errors = []
+            });
+        }
+        catch(InvalidOperationException ex)
+        {
+            _logger.LogError(ex.Message);
+
+            return BadRequest(ErrorMapper.CreateErrorResponse(ex.Message));
+        }
+        catch(Exception ex)
+        {
+            _logger.LogCritical(ex, "Erro inesperado");
+
+            return StatusCode(StatusCodes.Status500InternalServerError, ErrorMapper.CreateErrorResponse("Ocorreu um erro inesperado."));
         }
     }
 }

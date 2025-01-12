@@ -6,6 +6,7 @@ using AICBank.Core.Email;
 using AICBank.Core.Entities;
 using AICBank.Core.Interfaces;
 using AICBank.Core.Mapping;
+using AICBank.Core.Repositories;
 using AICBank.Core.Services;
 using AutoMapper;
 using FakeItEasy;
@@ -51,7 +52,8 @@ public class BankAccountServiceTests
             _httpContextAccessor,
             _celCashClientService,
             _emailService,
-            _splitFactory);
+            _splitFactory,
+            A.Fake<IMandatoryDocumentsRepository>());
     }
 
     [Fact]

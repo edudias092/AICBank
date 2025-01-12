@@ -33,7 +33,7 @@ public class ApiAuthData
     public int GalaxId { get; set; }
     public string GalaxHash { get; set; }
     public string PublicToken { get; set; }
-    public string confirmHashWebhook { get; set; }
+    public string ConfirmHashWebhook { get; set; }
 }
 
 public class ErrorDetails

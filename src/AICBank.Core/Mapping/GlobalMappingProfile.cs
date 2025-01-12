@@ -13,5 +13,6 @@ public class GlobalMappingProfile : Profile
         CreateMap<AccountUser, AccountUserDTO>().ReverseMap();
         CreateMap<Professional, ProfessionalDTO>().ReverseMap();
         CreateMap<Address, AddressDTO>().ReverseMap();
+        CreateMap<MandatoryDocuments, MandatoryDocumentsDTO>().ReverseMap();
     }
 }
