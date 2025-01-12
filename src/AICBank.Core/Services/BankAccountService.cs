@@ -435,6 +435,11 @@ public class BankAccountService : IBankAccountService
     public async Task<bool> CheckSubaccountStatus(string galaxId,  bool approved)
     {
         var bankAccount = await _bankAccountRepository.GetBankAccountWithInfoByGalaxIdAsync(galaxId);
+
+        if (bankAccount == null)
+        {
+            throw new InvalidOperationException("Conta não encontrada.");
+        }
         
         bankAccount.Status = 
             approved ? StatusBankAccount.Activated 
