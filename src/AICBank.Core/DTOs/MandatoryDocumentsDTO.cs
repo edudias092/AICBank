@@ -8,6 +8,7 @@ namespace AICBank.Core.DTOs
 {
     public class MandatoryDocumentsDTO
     {
+        public int Id { get; set; }
         public string MotherName { get; set; }
         public DateTime BirthDate { get; set; }
         public int MonthlyIncome { get; set; }
@@ -16,6 +17,9 @@ namespace AICBank.Core.DTOs
         public string AssociateDocument { get; set; }
         public string AssociateType { get; set; }
         public string AssociateName { get; set; }
+        public string StatusIntegration { get; set; }
+        public string[] ReasonsStatus { get; set; }
+        public int BankAccountId { get; set; }
         public DocumentType Type { get; set; }
         public IFormFile Selfie{ get; set; }
         public IFormFile Front { get; set; }

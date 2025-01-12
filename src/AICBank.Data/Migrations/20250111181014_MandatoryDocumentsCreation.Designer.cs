@@ -4,6 +4,7 @@ using AICBank.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AICBank.Data.Migrations
 {
     [DbContext(typeof(AICBankDbContext))]
-    partial class AICBankDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250111181014_MandatoryDocumentsCreation")]
+    partial class MandatoryDocumentsCreation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -222,10 +225,6 @@ namespace AICBank.Data.Migrations
                         .IsRequired()
                         .HasColumnType("varchar(255)");
 
-                    b.Property<string>("AssociateType")
-                        .IsRequired()
-                        .HasColumnType("varchar(15)");
-
                     b.Property<int>("BankAccountId")
                         .HasColumnType("int");
 
@@ -242,6 +241,10 @@ namespace AICBank.Data.Migrations
                     b.Property<string>("SocialMediaLink")
                         .IsRequired()
                         .HasColumnType("varchar(255)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("varchar(15)");
 
                     b.HasKey("Id");
 

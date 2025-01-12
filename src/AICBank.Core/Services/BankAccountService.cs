@@ -4,6 +4,7 @@ using AICBank.Core.DTOs.CelCash;
 using AICBank.Core.Email;
 using AICBank.Core.Entities;
 using AICBank.Core.Interfaces;
+using AICBank.Core.Repositories;
 using AICBank.Core.Util;
 using AICBank.Core.Util.Extensions;
 using AutoMapper;
@@ -20,13 +21,15 @@ public class BankAccountService : IBankAccountService
     private readonly ICelCashClientService _celCashClientService;
     private readonly IEmailService _emailService;
     private readonly ISplitFactory _splitFactory;
+    private readonly IMandatoryDocumentsRepository _mandatoryDocumentsRepository;
 
     public BankAccountService(IBankAccountRepository bankAccountRepository,
         IMapper mapper,
         IHttpContextAccessor contextAccessor,
         ICelCashClientService celCashClientService,
         IEmailService emailService,
-        ISplitFactory splitFactory)
+        ISplitFactory splitFactory, 
+        IMandatoryDocumentsRepository mandatoryDocumentsRepository)
     {
         _bankAccountRepository = bankAccountRepository;
         _mapper = mapper;
@@ -34,6 +37,7 @@ public class BankAccountService : IBankAccountService
         _emailService = emailService;
         _httpContext = contextAccessor.HttpContext ?? throw new ApplicationException("Couldn't get the httpContext.");
         _splitFactory = splitFactory;
+        _mandatoryDocumentsRepository = mandatoryDocumentsRepository;
     }
 
     public async Task<ResponseDTO<BankAccountDTO>> CreateBankAccount(BankAccountDTO bankAccountDto)
@@ -138,7 +142,15 @@ public class BankAccountService : IBankAccountService
     {
         var existingBankAccount = await GetBankAccount(bankAccountId);
         var bankAccountDto = _mapper.Map<BankAccountDTO>(existingBankAccount);
-
+        
+        mandatoryDocumentsDto.BankAccountId = bankAccountId;
+        var mandatoryDocuments = _mapper.Map<MandatoryDocuments>(mandatoryDocumentsDto);
+        
+        if (mandatoryDocuments.Id != 0)
+            await _mandatoryDocumentsRepository.Update(mandatoryDocuments);
+        else
+            await _mandatoryDocumentsRepository.Add(mandatoryDocuments);
+        
         var celcashSendMandatoryDocumentsDto =
             CelcashSendMandatoryDocumentsDTO.FromMandatoryDocumentsDto(mandatoryDocumentsDto);
 
@@ -385,7 +397,41 @@ public class BankAccountService : IBankAccountService
 
         return new ResponseDTO<Dictionary<string, decimal>> { Data = null, Success = false };
     }
-    
+
+    public async Task<ResponseDTO<MandatoryDocumentsDTO>> GetMandatoryDocuments(int bankAccountId)
+    {
+        var mandatoryDocuments =
+            await _mandatoryDocumentsRepository.GetMandatoryDocumentsByBankAccountId(bankAccountId);
+
+        if (mandatoryDocuments == null)
+        {
+            return new ResponseDTO<MandatoryDocumentsDTO>
+            {
+                Data = null,
+                Success = true
+            };
+        }
+        var mandatoryDocumentsDto = _mapper.Map<MandatoryDocumentsDTO>(mandatoryDocuments);
+        
+        var filter = new CelcashFilterSubaccountDto
+        {
+            GalaxPayIds = [mandatoryDocuments.BankAccount.GalaxId],
+            StartAt = 0,
+            Limit = 1
+        };
+
+        var celcashBankAccountList = await _celCashClientService.GetSubaccountList(filter);
+
+        if (celcashBankAccountList != null && celcashBankAccountList.Subaccounts.Any())
+        {
+            var subAccount = celcashBankAccountList.Subaccounts.First();
+            mandatoryDocumentsDto.ReasonsStatus = subAccount.Verification.Reasons;
+            mandatoryDocumentsDto.StatusIntegration = subAccount.Verification.Status;
+        }
+        
+        return new ResponseDTO<MandatoryDocumentsDTO> { Data = mandatoryDocumentsDto, Success = true };
+    }
+
     private async Task<BankAccount> GetBankAccount(int bankAccountId)
     {
         var existingBankAccount = await _bankAccountRepository.GetBankAccountWithInfoByIdAsync(bankAccountId);

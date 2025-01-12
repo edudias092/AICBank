@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using AICBank.Core.DTOs;
 using AICBank.Core.Interfaces;
 using AICBank.Core.Mapping;
+using AICBank.Core.Repositories;
 using AICBank.Core.Services;
 using AICBank.Core.Validators;
 using AICBank.Data.Context;
@@ -98,5 +99,6 @@ public static class ServicesConfiguration
         servicesCollection.AddScoped<IEmailService, EmailService>();
         servicesCollection.AddScoped<IValidator<AccountUserDTO>, AccountUserDTOValidator>();
         servicesCollection.AddScoped<ISplitFactory, SplitFactory>();
+        servicesCollection.AddScoped<IMandatoryDocumentsRepository, MandatoryDocumentsRepository>();
     }
 }

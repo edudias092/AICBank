@@ -97,7 +97,7 @@ public class BankAccountController : ControllerBase
         {
             _logger.LogError(ex.Message);
 
-            return BadRequest(ex.Message);
+            return BadRequest(ErrorMapper.CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
@@ -426,6 +426,35 @@ public class BankAccountController : ControllerBase
             
             return StatusCode(StatusCodes.Status500InternalServerError, 
                 ErrorMapper.CreateErrorResponse("Ocorreu um erro inesperado"));
+        }
+    }
+
+    [HttpGet("{bankAccountId:int}/mandatoryDocuments")]
+    public async Task<IActionResult> GetMandatoryDocuments(int bankAccountId)
+    {
+        try
+        {
+            var result = await _bankAccountService.GetMandatoryDocuments(bankAccountId);
+
+            if(result == null || !result.Success)
+            {
+                return NotFound(result);
+            }
+
+            return Ok(result);
+        }
+        catch(InvalidOperationException ex)
+        {
+            _logger.LogError(ex.Message);
+
+            return BadRequest(ErrorMapper.CreateErrorResponse(ex.Message));
+        }
+        catch(Exception ex)
+        {
+            _logger.LogCritical(ex, "Erro inesperado");
+            
+            return StatusCode(StatusCodes.Status500InternalServerError, 
+                ErrorMapper.CreateErrorResponse("Ocorreu um erro inesperado."));
         }
     }
 }

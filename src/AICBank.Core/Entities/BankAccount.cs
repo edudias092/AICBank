@@ -24,5 +24,6 @@ namespace AICBank.Core.Entities
         public int? ProfessionalId { get; set; }
         public AccountUser AccountUser { get; set; }
         public int AccountUserId { get; set; }
+        public IEnumerable<MandatoryDocuments> MandatoryDocuments { get; set; }
     }
 }
