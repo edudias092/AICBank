@@ -432,6 +432,27 @@ public class BankAccountService : IBankAccountService
         return new ResponseDTO<MandatoryDocumentsDTO> { Data = mandatoryDocumentsDto, Success = true };
     }
 
+    public async Task<bool> CheckSubaccountStatus(string galaxId,  bool approved)
+    {
+        var bankAccount = await _bankAccountRepository.GetBankAccountWithInfoByGalaxIdAsync(galaxId);
+        
+        bankAccount.Status = 
+            approved ? StatusBankAccount.Activated 
+                : (bankAccount.Status == StatusBankAccount.PendingAnalysis) 
+                    ? StatusBankAccount.PendingDocuments
+                    : bankAccount.Status;
+
+        var bankAccountDto = _mapper.Map<BankAccountDTO>(bankAccount);
+        IEmailMessageBuilder messageBuilder = approved
+            ? new BankAccountApprovedMessageBuilder(bankAccountDto)
+            : new BankAccountReprovedMessageBuilder(bankAccountDto);
+        
+        await _bankAccountRepository.Update(bankAccount);
+        await _emailService.SendEmailAsync(messageBuilder);
+        
+        return true;
+    }
+
     private async Task<BankAccount> GetBankAccount(int bankAccountId)
     {
         var existingBankAccount = await _bankAccountRepository.GetBankAccountWithInfoByIdAsync(bankAccountId);

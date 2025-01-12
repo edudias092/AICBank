@@ -35,4 +35,16 @@ public class BankAccountRepository : Repository<BankAccount>, IBankAccountReposi
 
         return bankAccount;
     }
+    
+    public async Task<BankAccount> GetBankAccountWithInfoByGalaxIdAsync(string galaxId)
+    { 
+        var bankAccount = await _set.Where(b => b.GalaxId == galaxId)
+            .Include(b => b.Address)
+            .Include(b => b.Professional)
+            .Include(b => b.AccountUser)
+            .AsNoTracking()
+            .FirstOrDefaultAsync();
+        
+        return bankAccount;
+    }
 }

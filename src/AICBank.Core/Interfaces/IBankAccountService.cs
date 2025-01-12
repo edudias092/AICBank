@@ -22,4 +22,5 @@ public interface IBankAccountService
     Task<ResponseDTO<Dictionary<string, decimal>>> GetChargesSumByDate(int bankAccountId);
     Task<ResponseDTO<Dictionary<string, decimal>>> GetChargesSumWeekly(int bankAccountId);
     Task<ResponseDTO<MandatoryDocumentsDTO>> GetMandatoryDocuments(int bankAccountId);
+    Task<bool> CheckSubaccountStatus(string galaxId, bool approved);
 }
