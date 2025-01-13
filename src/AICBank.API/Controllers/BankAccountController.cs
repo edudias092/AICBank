@@ -205,7 +205,7 @@ public class BankAccountController : ControllerBase
 
             if(!result.Success)
             {
-                return BadRequest(result);
+                return BadRequest(ErrorMapper.CreateErrorResponse(result.Errors));
             }
 
             return Ok(result);

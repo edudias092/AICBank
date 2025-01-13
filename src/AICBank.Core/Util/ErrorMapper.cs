@@ -14,11 +14,13 @@ public class ErrorMapper
             StringBuilder sb = new StringBuilder();
             sb.AppendLine(errorDetails.Message);
 
-            if(errorDetails.Details != null){
+            if(errorDetails.Details != null)
+            {
                 foreach(var detail in errorDetails.Details){
-                    var keyName = _fieldNames.ContainsKey(detail.Key)? _fieldNames[detail.Key]+": " : "";
+                    var keyName = detail.Key?.Split('.').LastOrDefault();
+                    keyName = !string.IsNullOrEmpty(keyName) && _fieldNames.ContainsKey(keyName)? _fieldNames[keyName]+": " : "";
                     foreach(var error in detail.Value){
-                        sb.AppendFormat("\n{0}{1}", keyName.ToUpper(), error);
+                        sb.AppendFormat("\n{0}{1}", keyName, error);
                     }
                 }
             }
@@ -80,6 +82,7 @@ public class ErrorMapper
         {"picture", "Foto da CNH"},
         {"front", "Foto da frente do RG"},
         {"back", "Foto do verso do RG"},
-        {"address", "Comprovante de Endereço"}
+        {"address", "Comprovante de Endereço"},
+        {"instructions", "Instruções"}
     };
 }

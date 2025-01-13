@@ -253,6 +253,11 @@ public class BankAccountService : IBankAccountService
         chargeDto.Split = _splitFactory.CreateDefaultBoletoSplitPaymentMethod();
         var chargeResponseDto = await _celCashClientService.CreateCharge(bankAccountDto, chargeDto);
 
+        if (chargeResponseDto.Error != null)
+        {
+            throw new InvalidOperationException(ErrorMapper.MapErrors(chargeResponseDto.Error));
+        }
+        
         return new ResponseDTO<CelcashChargeDTO>{
             Data = chargeResponseDto.Charge,
             Success = chargeResponseDto.Error == null,

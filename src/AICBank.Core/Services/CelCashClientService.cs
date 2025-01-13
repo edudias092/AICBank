@@ -166,7 +166,9 @@ public class CelCashClientService : ICelCashClientService
             .AddContent(JsonContent.Create(chargeDto, null, _jsonSerializerOptions))
             .Build();
 
-        return await _httpRequestSender.SendAsync<CelcashChargeResponseDTO>(request);
+        return await _httpRequestSender
+            .SendAsync(request, null,
+                content => JsonSerializer.Deserialize<CelcashChargeResponseDTO>(content, _jsonSerializerOptions));
     }
 
     public async Task<CelcashListChargeResponseDTO> GetCharges(BankAccountDTO bankAccountDto, DateTime? initialDate,
